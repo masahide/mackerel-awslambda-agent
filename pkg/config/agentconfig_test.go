@@ -53,24 +53,24 @@ func TestGetCheckConfigs(t *testing.T) {
 	}{
 		{
 			outputs: []map[string]*dynamodb.AttributeValue{
-				map[string]*dynamodb.AttributeValue{
-					"Id":       &dynamodb.AttributeValue{S: aws.String("test1")},
-					"Hostname": &dynamodb.AttributeValue{S: aws.String("hostname1")},
-					"name":     &dynamodb.AttributeValue{S: aws.String("name1")},
+				{
+					"Id":       {S: aws.String("test1")},
+					"Hostname": {S: aws.String("hostname1")},
+					"name":     {S: aws.String("name1")},
 				},
-				map[string]*dynamodb.AttributeValue{
-					"Id":       &dynamodb.AttributeValue{S: aws.String("test2")},
-					"Hostname": &dynamodb.AttributeValue{S: aws.String("hostname2")},
-					"name":     &dynamodb.AttributeValue{S: aws.String("name2")},
+				{
+					"Id":       {S: aws.String("test2")},
+					"Hostname": {S: aws.String("hostname2")},
+					"name":     {S: aws.String("name2")},
 				},
 			},
 			want: []CheckConfig{
-				CheckConfig{
+				{
 					ID:       "test1",
 					Hostname: "hostname1",
 					Name:     "name1",
 				},
-				CheckConfig{
+				{
 					ID:       "test2",
 					Hostname: "hostname2",
 					Name:     "name2",
