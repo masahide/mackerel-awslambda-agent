@@ -1,6 +1,6 @@
 SOURCE_FILES?=./...
-BIN?=./dist/mackerel-agent-serverless
-MAIN?=./cmd/mackerel-agent-serverless
+BIN?=./dist/mackerel-serverless-agent
+MAIN?=./cmd/mackerel-serverless-agent
 TEST_PATTERN?=.
 TEST_OPTIONS?=
 OS=$(shell uname -s)
@@ -47,6 +47,7 @@ build: clean $(BIN)
 
 clean:
 	rm -f $(BIN)
+	rm -f coverage.txt *coverage.txt
 .PHONY: clean
 
 $(BIN):

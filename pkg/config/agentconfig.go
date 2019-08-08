@@ -10,7 +10,7 @@ import (
 	"github.com/kelseyhightower/envconfig"
 )
 
-// Env config of mackerel-agent-serverless
+// Env config of mackerel-serverless-agent
 type Env struct {
 	CheckConfigTable string `default:"mackerel-serverless-check-config"`
 	StateTable       string `default:"mackerel-serverless-state"`
