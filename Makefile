@@ -1,6 +1,6 @@
 SOURCE_FILES?=./...
-BIN?=./dist/mackerel-serverless-agent
-MAIN?=./cmd/mackerel-serverless-agent
+BIN?=./dist/mackerel-awslambda-agent
+MAIN?=./cmd/mackerel-awslambda-agent
 TEST_PATTERN?=.
 TEST_OPTIONS?=
 OS=$(shell uname -s)

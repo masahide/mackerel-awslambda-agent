@@ -1,4 +1,4 @@
-module github.com/masahide/mackerel-serverless-agent
+module github.com/masahide/mackerel-awslambda-agent
 
 go 1.12
 
