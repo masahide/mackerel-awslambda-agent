@@ -66,3 +66,57 @@ func (a *AgentConfig) getHosts() (map[string]Host, error) {
 	}
 	return res, nil
 }
+
+func (a *AgentConfig) getCheckRules() (map[string]CheckRule, error) {
+	rules := []CheckRule{}
+	var unmarshalErr error
+	err := a.ScanPages(
+		&dynamodb.ScanInput{TableName: &a.CheckRulesTable},
+		func(page *dynamodb.ScanOutput, lastPage bool) bool {
+			c := make([]CheckRule, len(page.Items))
+			if unmarshalErr = dynamodbattribute.UnmarshalListOfMaps(page.Items, &c); unmarshalErr != nil {
+				return false
+			}
+			rules = append(rules, c...)
+			return true
+		},
+	)
+	if unmarshalErr != nil {
+		return nil, unmarshalErr
+	}
+	if err != nil {
+		return nil, err
+	}
+	res := make(map[string]CheckRule, len(rules))
+	for _, c := range rules {
+		res[c.RuleName] = c
+	}
+	return res, nil
+}
+
+func (a *AgentConfig) getCheckStates() (map[string]CheckState, error) {
+	states := []CheckState{}
+	var unmarshalErr error
+	err := a.ScanPages(
+		&dynamodb.ScanInput{TableName: &a.StateTable},
+		func(page *dynamodb.ScanOutput, lastPage bool) bool {
+			c := make([]CheckState, len(page.Items))
+			if unmarshalErr = dynamodbattribute.UnmarshalListOfMaps(page.Items, &c); unmarshalErr != nil {
+				return false
+			}
+			states = append(states, c...)
+			return true
+		},
+	)
+	if unmarshalErr != nil {
+		return nil, unmarshalErr
+	}
+	if err != nil {
+		return nil, err
+	}
+	res := make(map[string]CheckState, len(states))
+	for _, c := range states {
+		res[c.StateID] = c
+	}
+	return res, nil
+}

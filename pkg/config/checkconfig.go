@@ -3,7 +3,7 @@ package config
 // Host mackerel check host info
 type Host struct {
 	// Manual definition
-	ID            string            `json:"id" default:"hostname"`
+	ID            string            `json:"id" default:"hostname"` // Primary key
 	Hostname      string            `json:"hostname"`
 	SourceType    string            `json:"sourceType" default:"host"`
 	TargetRegion  string            `json:"targetRegion"`
@@ -19,14 +19,21 @@ type Host struct {
 // CheckRule rule of check Plugin
 type CheckRule struct {
 	// Manual definition
-	RuleName              string `json:"ruleName"`
+	RuleName              string `json:"ruleName"` // Primary key
 	PluginType            string `json:"pluginType"`
 	Parameters            string `json:"paramerters"`
-	TimeoutSec            string `json:"timeoutSeconds"`
+	TimeoutSec            int    `json:"timeoutSeconds"`
 	PreventAlertAutoClose bool   `json:"preventAlertAutoClose"`
 	CheckInterval         int    `json:"checkInterval"`
 	Action                string `json:"action"`
 	NotificationInterval  int    `json:"notificationInterval"` // <- Post report
 	MaxCheckAttempts      int    `json:"maxCheckAttempts"`     // <- Post report
 
+}
+
+// CheckState state of check Plugin
+type CheckState struct {
+	// Manual definition
+	StateID string `json:"stateId"` // Primary key
+	Data    []byte `json:"data"`
 }

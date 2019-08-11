@@ -106,3 +106,97 @@ func TestGetHosts(t *testing.T) {
 		}
 	}
 }
+
+func TestGetCheckRules(t *testing.T) {
+	test := []struct {
+		outputs []map[string]*dynamodb.AttributeValue
+		want    map[string]CheckRule
+	}{
+		{
+			outputs: []map[string]*dynamodb.AttributeValue{
+				{
+					"ruleName":   {S: aws.String("test1")},
+					"pluginType": {S: aws.String("hostname1")},
+				},
+				{
+					"ruleName":   {S: aws.String("test2")},
+					"pluginType": {S: aws.String("hostname2")},
+				},
+			},
+			want: map[string]CheckRule{
+				"test1": {
+					RuleName:   "test1",
+					PluginType: "cloudwatchlogs",
+				},
+				"test2": {
+					RuleName:   "test2",
+					PluginType: "cloudwatchlogs",
+				},
+			},
+		},
+	}
+	sess := session.Must(session.NewSession())
+	for _, tt := range test {
+		c := NewAgentConfig(sess)
+		m := mockDynamodb{
+			outputs: tt.outputs,
+		}
+		c.DynamoDBAPI = &m
+		res, err := c.getCheckRules()
+		if err != nil {
+			t.Error(err)
+		}
+		for i := range res {
+			if !reflect.DeepEqual(res[i], tt.want[i]) {
+				t.Errorf("res[i]=<%#v> want <%#v>", res[i], tt.want[i])
+			}
+		}
+	}
+}
+
+func TestGetCheckStates(t *testing.T) {
+	test := []struct {
+		outputs []map[string]*dynamodb.AttributeValue
+		want    map[string]CheckState
+	}{
+		{
+			outputs: []map[string]*dynamodb.AttributeValue{
+				{
+					"stateID": {S: aws.String("test1")},
+					"data":    {B: []byte("hostname1")},
+				},
+				{
+					"stateID": {S: aws.String("test2")},
+					"data":    {B: []byte("hostname1")},
+				},
+			},
+			want: map[string]CheckState{
+				"test1": {
+					StateID: "test1",
+					Data:    []byte("hostname1"),
+				},
+				"test2": {
+					StateID: "test2",
+					Data:    []byte("hostname1"),
+				},
+			},
+		},
+	}
+	sess := session.Must(session.NewSession())
+	for _, tt := range test {
+		c := NewAgentConfig(sess)
+		m := mockDynamodb{
+			outputs: tt.outputs,
+		}
+		c.DynamoDBAPI = &m
+		res, err := c.getCheckStates()
+		if err != nil {
+			t.Error(err)
+		}
+		for i := range res {
+			if !reflect.DeepEqual(res[i], tt.want[i]) {
+				t.Errorf("res[i]=<%q> want <%q>", res[i], tt.want[i])
+			}
+		}
+	}
+}
