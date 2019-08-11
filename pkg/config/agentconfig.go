@@ -12,20 +12,25 @@ import (
 
 // Env config of mackerel-serverless-agent
 type Env struct {
-	CheckConfigTable string `default:"mackerel-serverless-check-config"`
-	StateTable       string `default:"mackerel-serverless-state"`
+	HostsTable      string `default:"mackerel-awslambda-hosts"`
+	CheckRulesTable string `default:"mackerel-awslambda-checkrules"`
+	StateTable      string `default:"mackerel-awslambda-state"`
 }
 
 // AgentConfig is agent config struct
 type AgentConfig struct {
 	Env
 	dynamodbiface.DynamoDBAPI
+	CheckRules map[string]CheckRule
+	Hosts      map[string]Host
 }
 
 // NewAgentConfig load config from env
 func NewAgentConfig(p client.ConfigProvider) *AgentConfig {
 	a := &AgentConfig{
 		DynamoDBAPI: dynamodb.New(p),
+		CheckRules:  map[string]CheckRule{},
+		Hosts:       map[string]Host{},
 	}
 	err := envconfig.Process("", &a.Env)
 	if err != nil {
@@ -34,22 +39,30 @@ func NewAgentConfig(p client.ConfigProvider) *AgentConfig {
 	return a
 }
 
-// GetCheckConfigs get check configs
-func (a *AgentConfig) GetCheckConfigs() ([]CheckConfig, error) {
-	res := []CheckConfig{}
+// getHosts get check configs
+func (a *AgentConfig) getHosts() (map[string]Host, error) {
+	hosts := []Host{}
 	var unmarshalErr error
-	err := a.ScanPages(&dynamodb.ScanInput{
-		TableName: &a.CheckConfigTable,
-	}, func(page *dynamodb.ScanOutput, lastPage bool) bool {
-		conf := make([]CheckConfig, len(page.Items))
-		if unmarshalErr = dynamodbattribute.UnmarshalListOfMaps(page.Items, &conf); unmarshalErr != nil {
-			return false
-		}
-		res = append(res, conf...)
-		return true
-	})
+	err := a.ScanPages(
+		&dynamodb.ScanInput{TableName: &a.HostsTable},
+		func(page *dynamodb.ScanOutput, lastPage bool) bool {
+			h := make([]Host, len(page.Items))
+			if unmarshalErr = dynamodbattribute.UnmarshalListOfMaps(page.Items, &h); unmarshalErr != nil {
+				return false
+			}
+			hosts = append(hosts, h...)
+			return true
+		},
+	)
 	if unmarshalErr != nil {
 		return nil, unmarshalErr
 	}
-	return res, err
+	if err != nil {
+		return nil, err
+	}
+	res := make(map[string]Host, len(hosts))
+	for _, h := range hosts {
+		res[h.ID] = h
+	}
+	return res, nil
 }

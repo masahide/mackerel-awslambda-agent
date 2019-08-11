@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"reflect"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -17,10 +18,11 @@ func TestNewAgentConfig(t *testing.T) {
 		want Env
 	}{
 		{
-			envs: []string{"CheckConfigTable", "StateTable"},
+			envs: []string{"HostsTable", "StateTable"},
 			want: Env{
-				CheckConfigTable: "mackerel-serverless-check-config",
-				StateTable:       "mackerel-serverless-state",
+				HostsTable:      "mackerel-awslambda-hosts",
+				CheckRulesTable: "mackerel-awslambda-checkrules",
+				StateTable:      "mackerel-awslambda-state",
 			},
 		},
 	}
@@ -31,7 +33,7 @@ func TestNewAgentConfig(t *testing.T) {
 		}
 		c := NewAgentConfig(sess)
 		if c.Env != tt.want {
-			t.Errorf("result = <%s> want <%s>", c, tt.want)
+			t.Errorf("result = <%q> want <%q>", c.Env, tt.want)
 		}
 	}
 }
@@ -46,34 +48,42 @@ func (m *mockDynamodb) ScanPages(in *dynamodb.ScanInput, fn func(*dynamodb.ScanO
 	return nil
 }
 
-func TestGetCheckConfigs(t *testing.T) {
+func TestGetHosts(t *testing.T) {
 	test := []struct {
 		outputs []map[string]*dynamodb.AttributeValue
-		want    []CheckConfig
+		want    map[string]Host
 	}{
 		{
 			outputs: []map[string]*dynamodb.AttributeValue{
 				{
-					"Id":       {S: aws.String("test1")},
-					"Hostname": {S: aws.String("hostname1")},
-					"name":     {S: aws.String("name1")},
+					"id":       {S: aws.String("test1")},
+					"hostname": {S: aws.String("hostname1")},
+					"memos": {M: map[string]*dynamodb.AttributeValue{
+						"check1": {S: aws.String("arn::hoge")},
+					}},
 				},
 				{
-					"Id":       {S: aws.String("test2")},
-					"Hostname": {S: aws.String("hostname2")},
-					"name":     {S: aws.String("name2")},
+					"id":       {S: aws.String("test2")},
+					"hostname": {S: aws.String("hostname2")},
+					"memos": {M: map[string]*dynamodb.AttributeValue{
+						"check1": {S: aws.String("arn::hoge")},
+					}},
 				},
 			},
-			want: []CheckConfig{
-				{
+			want: map[string]Host{
+				"test1": {
 					ID:       "test1",
 					Hostname: "hostname1",
-					Name:     "name1",
+					Memos: map[string]string{
+						"check1": "arn::hoge",
+					},
 				},
-				{
+				"test2": {
 					ID:       "test2",
 					Hostname: "hostname2",
-					Name:     "name2",
+					Memos: map[string]string{
+						"check1": "arn::hoge",
+					},
 				},
 			},
 		},
@@ -85,12 +95,12 @@ func TestGetCheckConfigs(t *testing.T) {
 			outputs: tt.outputs,
 		}
 		c.DynamoDBAPI = &m
-		res, err := c.GetCheckConfigs()
+		res, err := c.getHosts()
 		if err != nil {
 			t.Error(err)
 		}
 		for i := range res {
-			if res[i] != tt.want[i] {
+			if !reflect.DeepEqual(res[i], tt.want[i]) {
 				t.Errorf("res[i]=<%q> want <%q>", res[i], tt.want[i])
 			}
 		}

@@ -1,0 +1,41 @@
+@startuml
+
+package "lambda:start" {
+    start as [configure\nplugin invoker]
+}
+
+package "lambda:agent_plugins" {
+    plugin1 as [mackerel-plugin-redis]
+    plugin2 as [mackerel-plugin-mysql]
+}
+
+package "lambda:check_plugins"{
+    plugin3 as [check-aws-cloudwatch-logs]
+}
+
+database {
+   sqs as [SQS] #FFAADF
+}
+
+package "lambda:end" {
+    end as [reducer\nsender]
+}
+
+cloud {
+  mackerel as [mackerel:api]  #A9FFDF
+}
+
+start --> plugin1
+start --> plugin2
+start --> plugin3
+
+plugin1 --> sqs
+plugin2 --> sqs
+plugin3 --> sqs
+
+
+sqs --> end
+
+end --> mackerel
+
+@enduml
