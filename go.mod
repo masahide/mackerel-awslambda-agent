@@ -17,5 +17,6 @@ require (
 	github.com/mackerelio/mackerel-container-agent v0.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.2 // indirect
 	github.com/natefinch/atomic v0.0.0-20150920032501-a62ce929ffcc
+	github.com/pkg/errors v0.8.1
 	github.com/stretchr/testify v1.3.0
 )

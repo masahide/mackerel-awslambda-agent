@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/pkg/errors"
 )
 
 // Env config of mackerel-awslambda-agent
@@ -23,6 +24,7 @@ type AgentConfig struct {
 	dynamodbiface.DynamoDBAPI
 	CheckRules map[string]CheckRule
 	Hosts      map[string]Host
+	States     map[string]State
 }
 
 // NewAgentConfig load config from env
@@ -37,6 +39,19 @@ func NewAgentConfig(p client.ConfigProvider) *AgentConfig {
 		log.Fatal(err.Error())
 	}
 	return a
+}
+
+// LoadTables load config from env
+func (a *AgentConfig) LoadTables() error {
+	var err error
+	if a.Hosts, err = a.getHosts(); err != nil {
+		return err
+	}
+	if a.CheckRules, err = a.getCheckRules(); err != nil {
+		return err
+	}
+	a.States, err = a.getStates()
+	return err
 }
 
 // getHosts get check configs
@@ -94,13 +109,13 @@ func (a *AgentConfig) getCheckRules() (map[string]CheckRule, error) {
 	return res, nil
 }
 
-func (a *AgentConfig) getCheckStates() (map[string]CheckState, error) {
-	states := []CheckState{}
+func (a *AgentConfig) getStates() (map[string]State, error) {
+	states := []State{}
 	var unmarshalErr error
 	err := a.ScanPages(
 		&dynamodb.ScanInput{TableName: &a.StateTable},
 		func(page *dynamodb.ScanOutput, lastPage bool) bool {
-			c := make([]CheckState, len(page.Items))
+			c := make([]State, len(page.Items))
 			if unmarshalErr = dynamodbattribute.UnmarshalListOfMaps(page.Items, &c); unmarshalErr != nil {
 				return false
 			}
@@ -114,9 +129,19 @@ func (a *AgentConfig) getCheckStates() (map[string]CheckState, error) {
 	if err != nil {
 		return nil, err
 	}
-	res := make(map[string]CheckState, len(states))
+	res := make(map[string]State, len(states))
 	for _, c := range states {
-		res[c.StateID] = c
+		res[c.ID] = c
 	}
 	return res, nil
+}
+
+// PutState put State
+func (a *AgentConfig) PutState(in State) error {
+	attr, err := dynamodbattribute.MarshalMap(in)
+	if err != nil {
+		return errors.Wrap(err, "MarshalMap err")
+	}
+	_, err = a.PutItem(&dynamodb.PutItemInput{Item: attr})
+	return err
 }

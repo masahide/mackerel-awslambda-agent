@@ -116,11 +116,11 @@ func TestGetCheckRules(t *testing.T) {
 			outputs: []map[string]*dynamodb.AttributeValue{
 				{
 					"ruleName":   {S: aws.String("test1")},
-					"pluginType": {S: aws.String("hostname1")},
+					"pluginType": {S: aws.String("cloudwatchlogs")},
 				},
 				{
 					"ruleName":   {S: aws.String("test2")},
-					"pluginType": {S: aws.String("hostname2")},
+					"pluginType": {S: aws.String("cloudwatchlogs")},
 				},
 			},
 			want: map[string]CheckRule{
@@ -148,36 +148,36 @@ func TestGetCheckRules(t *testing.T) {
 		}
 		for i := range res {
 			if !reflect.DeepEqual(res[i], tt.want[i]) {
-				t.Errorf("res[i]=<%#v> want <%#v>", res[i], tt.want[i])
+				t.Errorf("key:%s res[i]=<%#v> want <%#v>", i, res[i], tt.want[i])
 			}
 		}
 	}
 }
 
-func TestGetCheckStates(t *testing.T) {
+func TestGetStates(t *testing.T) {
 	test := []struct {
 		outputs []map[string]*dynamodb.AttributeValue
-		want    map[string]CheckState
+		want    map[string]State
 	}{
 		{
 			outputs: []map[string]*dynamodb.AttributeValue{
 				{
-					"stateID": {S: aws.String("test1")},
-					"data":    {B: []byte("hostname1")},
+					"id":    {S: aws.String("test1")},
+					"state": {B: []byte("hostname1")},
 				},
 				{
-					"stateID": {S: aws.String("test2")},
-					"data":    {B: []byte("hostname1")},
+					"id":    {S: aws.String("test2")},
+					"state": {B: []byte("hostname1")},
 				},
 			},
-			want: map[string]CheckState{
+			want: map[string]State{
 				"test1": {
-					StateID: "test1",
-					Data:    []byte("hostname1"),
+					ID:    "test1",
+					State: []byte("hostname1"),
 				},
 				"test2": {
-					StateID: "test2",
-					Data:    []byte("hostname1"),
+					ID:    "test2",
+					State: []byte("hostname1"),
 				},
 			},
 		},
@@ -189,7 +189,7 @@ func TestGetCheckStates(t *testing.T) {
 			outputs: tt.outputs,
 		}
 		c.DynamoDBAPI = &m
-		res, err := c.getCheckStates()
+		res, err := c.getStates()
 		if err != nil {
 			t.Error(err)
 		}
@@ -198,5 +198,42 @@ func TestGetCheckStates(t *testing.T) {
 				t.Errorf("res[i]=<%q> want <%q>", res[i], tt.want[i])
 			}
 		}
+	}
+}
+
+func (m *mockDynamodb) PutItem(in *dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error) {
+	return &dynamodb.PutItemOutput{}, nil
+}
+
+func TestPutState(t *testing.T) {
+	sess := session.Must(session.NewSession())
+	c := NewAgentConfig(sess)
+	m := mockDynamodb{}
+	c.DynamoDBAPI = &m
+	err := c.PutState(State{})
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestLoadTables(t *testing.T) {
+	sess := session.Must(session.NewSession())
+	c := NewAgentConfig(sess)
+	m := mockDynamodb{
+		outputs: []map[string]*dynamodb.AttributeValue{},
+	}
+	c.DynamoDBAPI = &m
+	err := c.LoadTables()
+	if err != nil {
+		t.Error(err)
+	}
+	if len(c.Hosts) != 0 {
+		t.Error("len(c.Hosts)!=0")
+	}
+	if len(c.CheckRules) != 0 {
+		t.Error("len(c.CheckRules)!=0")
+	}
+	if len(c.States) != 0 {
+		t.Error("len(c.States)!=0")
 	}
 }
