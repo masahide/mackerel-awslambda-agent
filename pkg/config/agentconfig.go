@@ -104,7 +104,7 @@ func (a *AgentConfig) getCheckRules() (map[string]CheckRule, error) {
 	}
 	res := make(map[string]CheckRule, len(rules))
 	for _, c := range rules {
-		res[c.RuleName] = c
+		res[c.Name] = c
 	}
 	return res, nil
 }

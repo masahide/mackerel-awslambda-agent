@@ -1,20 +1,24 @@
 package config
 
+// Check mackerel check info
+type Check struct {
+	Name string `json:"name"`
+	Memo string `json:"memo"`
+}
+
 // Host mackerel check host info
 type Host struct {
-	ID            string            `json:"id" default:"hostname"` // Primary key
-	Hostname      string            `json:"hostname"`
-	SourceType    string            `json:"sourceType" default:"host"`
-	TargetRegion  string            `json:"targetRegion"`
-	AssumeRoleARN string            `json:"assumeRoleArn"`
-	Memos         map[string]string `json:"memos"`        // '{"ruleName":"memo",...}'
-	CheckTargets  map[string]string `json:"checkTargets"` // '{"ruleName":"targetArn",...}'
-
+	ID            string  `json:"id" default:"hostname"` // Primary key
+	Hostname      string  `json:"hostname"`
+	SourceType    string  `json:"sourceType" default:"host"`
+	TargetRegion  string  `json:"targetRegion"`
+	AssumeRoleARN string  `json:"assumeRoleArn"`
+	Checks        []Check `json:"checks" dynamodbav:"checks"` // '[{"name":"checkName","memo":""},...]'
 }
 
 // CheckRule rule of check Plugin
 type CheckRule struct {
-	RuleName              string `json:"ruleName"` // Primary key
+	Name                  string `json:"name"` // Primary key
 	PluginType            string `json:"pluginType"`
 	Parameters            string `json:"paramerters"`
 	TimeoutSec            int    `json:"timeoutSeconds"`
@@ -32,5 +36,21 @@ type State struct {
 	ID           string `json:"id"`    // Primary key
 	State        []byte `json:"state"` // State data
 	HostID       string `json:"hostId"`
-	HostCehckSum string `json:"HostCheckSum"`
+	HostCehckSum string `json:"hostCheckSum"`
 }
+
+/*
+func (u Checks) UnmarshalDynamoDBAttributeValue(av *dynamodb.AttributeValue) error {
+	if unmarshalErr = dynamodbattribute.UnmarshalListOfMaps(page.Items, &h); unmarshalErr != nil { if av.M == nil {
+		return nil
+	}
+
+	n, err := strconv.ParseInt(*av.N, 10, 0)
+	if err != nil {
+		return err
+	}
+
+	u.Value = int(n)
+	return nil
+}
+*/

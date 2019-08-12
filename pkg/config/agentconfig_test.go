@@ -58,15 +58,15 @@ func TestGetHosts(t *testing.T) {
 				{
 					"id":       {S: aws.String("test1")},
 					"hostname": {S: aws.String("hostname1")},
-					"memos": {M: map[string]*dynamodb.AttributeValue{
-						"check1": {S: aws.String("arn::hoge")},
+					"checks": {L: []*dynamodb.AttributeValue{
+						{M: map[string]*dynamodb.AttributeValue{"Name": {S: aws.String("check1")}, "Memo": {S: aws.String("fuga")}}},
 					}},
 				},
 				{
 					"id":       {S: aws.String("test2")},
 					"hostname": {S: aws.String("hostname2")},
-					"memos": {M: map[string]*dynamodb.AttributeValue{
-						"check1": {S: aws.String("arn::hoge")},
+					"checks": {L: []*dynamodb.AttributeValue{
+						{M: map[string]*dynamodb.AttributeValue{"Name": {S: aws.String("check1")}, "Memo": {S: aws.String("fuga")}}},
 					}},
 				},
 			},
@@ -74,15 +74,15 @@ func TestGetHosts(t *testing.T) {
 				"test1": {
 					ID:       "test1",
 					Hostname: "hostname1",
-					Memos: map[string]string{
-						"check1": "arn::hoge",
+					Checks: []Check{
+						{Name: "check1", Memo: "fuga"},
 					},
 				},
 				"test2": {
 					ID:       "test2",
 					Hostname: "hostname2",
-					Memos: map[string]string{
-						"check1": "arn::hoge",
+					Checks: []Check{
+						{Name: "check1", Memo: "fuga"},
 					},
 				},
 			},
@@ -115,21 +115,21 @@ func TestGetCheckRules(t *testing.T) {
 		{
 			outputs: []map[string]*dynamodb.AttributeValue{
 				{
-					"ruleName":   {S: aws.String("test1")},
+					"name":       {S: aws.String("test1")},
 					"pluginType": {S: aws.String("cloudwatchlogs")},
 				},
 				{
-					"ruleName":   {S: aws.String("test2")},
+					"name":       {S: aws.String("test2")},
 					"pluginType": {S: aws.String("cloudwatchlogs")},
 				},
 			},
 			want: map[string]CheckRule{
 				"test1": {
-					RuleName:   "test1",
+					Name:       "test1",
 					PluginType: "cloudwatchlogs",
 				},
 				"test2": {
-					RuleName:   "test2",
+					Name:       "test2",
 					PluginType: "cloudwatchlogs",
 				},
 			},
