@@ -1,11 +1,5 @@
 package config
 
-// Check mackerel check info
-type Check struct {
-	Name string `json:"name"`
-	Memo string `json:"memo"`
-}
-
 // Host mackerel check host info
 type Host struct {
 	ID            string  `json:"id" default:"hostname"` // Primary key
@@ -16,11 +10,17 @@ type Host struct {
 	Checks        []Check `json:"checks" dynamodbav:"checks"` // '[{"name":"checkName","memo":""},...]'
 }
 
+// Check mackerel check info
+type Check struct {
+	Name string `json:"name"`
+	Memo string `json:"memo"`
+}
+
 // CheckRule rule of check Plugin
 type CheckRule struct {
 	Name                  string `json:"name"` // Primary key
 	PluginType            string `json:"pluginType"`
-	Parameters            string `json:"paramerters"`
+	Command               string `json:"command"`
 	TimeoutSec            int    `json:"timeoutSeconds"`
 	PreventAlertAutoClose bool   `json:"preventAlertAutoClose"`
 	CheckInterval         int    `json:"checkInterval"`
