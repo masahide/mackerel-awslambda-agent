@@ -4,39 +4,35 @@ import (
 	"log"
 
 	"github.com/aws/aws-sdk-go/aws/client"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/kelseyhightower/envconfig"
-	"github.com/pkg/errors"
+	"github.com/masahide/mackerel-awslambda-agent/pkg/store"
+	"github.com/masahide/mackerel-awslambda-agent/pkg/store/dynamodbdriver"
 )
-
-// Env config of mackerel-awslambda-agent
-type Env struct {
-	HostsTable      string `default:"mackerel-awslambda-hosts"`
-	CheckRulesTable string `default:"mackerel-awslambda-checkrules"`
-	StateTable      string `default:"mackerel-awslambda-state"`
-}
 
 // AgentConfig is agent config struct
 type AgentConfig struct {
 	Env
-	dynamodbiface.DynamoDBAPI
-	CheckRules map[string]CheckRule
-	Hosts      map[string]Host
-	States     map[string]State
+	CheckRules     map[string]CheckRule
+	Hosts          map[string]Host
+	hostsStore     store.Store
+	checkRuleStore store.Store
+	stateStore     store.Store
 }
 
 // NewAgentConfig load config from env
 func NewAgentConfig(p client.ConfigProvider) *AgentConfig {
-	a := &AgentConfig{
-		DynamoDBAPI: dynamodb.New(p),
-		CheckRules:  map[string]CheckRule{},
-		Hosts:       map[string]Host{},
-	}
-	err := envconfig.Process("", &a.Env)
+	var env Env
+	err := envconfig.Process("", &env)
 	if err != nil {
 		log.Fatal(err.Error())
+	}
+	a := &AgentConfig{
+		hostsStore:     dynamodbdriver.New(p, env.HostsTable),
+		checkRuleStore: dynamodbdriver.New(p, env.CheckRulesTable),
+		stateStore:     dynamodbdriver.New(p, env.StateTable),
+		CheckRules:     map[string]CheckRule{},
+		Hosts:          map[string]Host{},
+		Env:            env,
 	}
 	return a
 }
@@ -50,29 +46,14 @@ func (a *AgentConfig) LoadTables() error {
 	if a.CheckRules, err = a.getCheckRules(); err != nil {
 		return err
 	}
-	a.States, err = a.getStates()
+	//a.CheckStates, err = a.getStates()
 	return err
 }
 
 // getHosts get check configs
 func (a *AgentConfig) getHosts() (map[string]Host, error) {
-	hosts := []Host{}
-	var unmarshalErr error
-	err := a.ScanPages(
-		&dynamodb.ScanInput{TableName: &a.HostsTable},
-		func(page *dynamodb.ScanOutput, lastPage bool) bool {
-			h := make([]Host, len(page.Items))
-			if unmarshalErr = dynamodbattribute.UnmarshalListOfMaps(page.Items, &h); unmarshalErr != nil {
-				return false
-			}
-			hosts = append(hosts, h...)
-			return true
-		},
-	)
-	if unmarshalErr != nil {
-		return nil, unmarshalErr
-	}
-	if err != nil {
+	var hosts []Host
+	if err := a.hostsStore.ScanAll(&hosts); err != nil {
 		return nil, err
 	}
 	res := make(map[string]Host, len(hosts))
@@ -83,23 +64,8 @@ func (a *AgentConfig) getHosts() (map[string]Host, error) {
 }
 
 func (a *AgentConfig) getCheckRules() (map[string]CheckRule, error) {
-	rules := []CheckRule{}
-	var unmarshalErr error
-	err := a.ScanPages(
-		&dynamodb.ScanInput{TableName: &a.CheckRulesTable},
-		func(page *dynamodb.ScanOutput, lastPage bool) bool {
-			c := make([]CheckRule, len(page.Items))
-			if unmarshalErr = dynamodbattribute.UnmarshalListOfMaps(page.Items, &c); unmarshalErr != nil {
-				return false
-			}
-			rules = append(rules, c...)
-			return true
-		},
-	)
-	if unmarshalErr != nil {
-		return nil, unmarshalErr
-	}
-	if err != nil {
+	var rules []CheckRule
+	if err := a.checkRuleStore.ScanAll(&rules); err != nil {
 		return nil, err
 	}
 	res := make(map[string]CheckRule, len(rules))
@@ -109,35 +75,37 @@ func (a *AgentConfig) getCheckRules() (map[string]CheckRule, error) {
 	return res, nil
 }
 
-func (a *AgentConfig) getStates() (map[string]State, error) {
-	states := []State{}
-	var unmarshalErr error
-	err := a.ScanPages(
-		&dynamodb.ScanInput{TableName: &a.StateTable},
-		func(page *dynamodb.ScanOutput, lastPage bool) bool {
-			c := make([]State, len(page.Items))
-			if unmarshalErr = dynamodbattribute.UnmarshalListOfMaps(page.Items, &c); unmarshalErr != nil {
-				return false
-			}
-			states = append(states, c...)
-			return true
-		},
-	)
-	if unmarshalErr != nil {
-		return nil, unmarshalErr
-	}
-	if err != nil {
-		return nil, err
-	}
-	res := make(map[string]State, len(states))
-	for _, c := range states {
-		res[c.ID] = c
-	}
-	return res, nil
+/*
+func (a *AgentConfig) getStates() (map[string]state.CheckState, error) {
+		var states []state.CheckState
+
+		err := a.ScanPages(
+			&dynamodb.ScanInput{TableName: &a.StateTable},
+			func(page *dynamodb.ScanOutput, lastPage bool) bool {
+				c := make([]state.CheckState, len(page.Items))
+				if unmarshalErr = dynamodbattribute.UnmarshalListOfMaps(page.Items, &c); unmarshalErr != nil {
+					return falsecheckRuleStore
+				}
+				states = append(states, c...)
+				return true
+			},
+		)
+		if unmarshalErr != nil {
+			return nil, unmarshalErr
+		}
+		if err != nil {
+			return nil, err
+		}
+		res := make(map[string]state.CheckState, len(states))
+		for _, c := range states {
+			res[c.ID] = c
+		}
+		return res, nil
+	return nil, nil
 }
 
-// PutState put State
-func (a *AgentConfig) PutState(in State) error {
+// PutState put state.CheckState
+func (a *AgentConfig) PutState(in state.CheckState) error {
 	attr, err := dynamodbattribute.MarshalMap(in)
 	if err != nil {
 		return errors.Wrap(err, "MarshalMap err")
@@ -145,3 +113,4 @@ func (a *AgentConfig) PutState(in State) error {
 	_, err = a.PutItem(&dynamodb.PutItemInput{Item: attr})
 	return err
 }
+*/

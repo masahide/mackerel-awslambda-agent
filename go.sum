@@ -5,11 +5,15 @@ github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78/go.mod h1:LmzpDX
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/Microsoft/go-winio v0.4.12/go.mod h1:VhR8bwka0BXejwEJY73c50VrPtXAaKcyvVC4A4RozmA=
 github.com/Songmu/retry v0.1.0/go.mod h1:7sXIW7eseB9fq0FUvigRcQMVLR9tuHI0Scok+rkpAuA=
+github.com/Songmu/timeout v0.3.1 h1://DvEPmBO0bfi1lZrvam2h+lGVh+aZEPLEbumoJSIEc=
 github.com/Songmu/timeout v0.3.1/go.mod h1:HUbpfjc2MgU7tXBcfE6Ta9Sk2NtKkZlr8G34/nhVYXE=
+github.com/Songmu/wrapcommander v0.0.0-20190209161912-6edabfc62ab9 h1:xu3B8iDZtpXl0meW/UVpgDLh/Oo0tlpBz7o7UZF9fxA=
 github.com/Songmu/wrapcommander v0.0.0-20190209161912-6edabfc62ab9/go.mod h1:BcurWRA8LPJdt1oyizpcpwYRDc11reXN3WnrbAnvdHE=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=
 github.com/aws/amazon-ecs-agent v1.26.1/go.mod h1:as/yyU3OZwCtKXO0Bv9dieYPupNo7jnNNZRNQTu9Row=
+github.com/aws/aws-lambda-go v1.12.1 h1:rMToYOcPFYDixQ7VNNPg78LmiqPgWD5f8zdLL+EsDAk=
+github.com/aws/aws-lambda-go v1.12.1/go.mod h1:z4ywteZ5WwbIEzG0tXizIAUlUwkTNNknX4upd5Z5XJM=
 github.com/aws/aws-sdk-go v1.19.12/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
 github.com/aws/aws-sdk-go v1.19.44/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
 github.com/aws/aws-sdk-go v1.22.0 h1:e88V6+dSEyBibUy0ekOydtTfNWzqG3hrtCR8SF6UqqY=
@@ -48,6 +52,7 @@ github.com/github/hub v2.11.1+incompatible/go.mod h1:zQrzJEdze2hfWJDgktd/L6sROjA
 github.com/go-kit/kit v0.8.0/go.mod h1:xBxKIO96dXMWWy0MnWVtmwkA9/13aqxPnvrjFYMA2as=
 github.com/go-logfmt/logfmt v0.3.0/go.mod h1:Qt1PoO58o5twSAckw1HlFXLmHsOX5/0LbT9GBnD5lWE=
 github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/melR3HDY=
+github.com/go-yaml/yaml v2.1.0+incompatible h1:RYi2hDdss1u4YE7GwixGzWwVo47T8UQwnTLB6vQiq+o=
 github.com/go-yaml/yaml v2.1.0+incompatible/go.mod h1:w2MrLa16VYP0jy6N7M5kHaCkaLENm+P+Tv+MfurjSw0=
 github.com/godbus/dbus v0.0.0-20190413140323-8e900ab0295c/go.mod h1:/YcGZj5zSblfDWMMoOzV4fas9FZnQYTkDnsGvmh2Grw=
 github.com/gogo/googleapis v1.1.0/go.mod h1:gf4bu3Q80BeJ6H1S1vYPm8/ELATdvryBaNFGgqEef3s=
@@ -166,6 +171,7 @@ github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXf
 github.com/stretchr/testify v1.3.0 h1:TivCn/peBQ7UY8ooIcPgZFpTNSz0Q2U6UrFlUfqbe0Q=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/tatsushid/go-fastping v0.0.0-20160109021039-d7bb493dee3e/go.mod h1:B4+Kq1u5FlULTjFSM707Q6e/cOHFv0z/6QRoxubDIQ8=
+github.com/urfave/cli v1.21.0/go.mod h1:lxDj6qX9Q6lWQxIrbrT0nwecwUtRnhVZAJjJZrVUZZQ=
 github.com/ziutek/mymysql v1.5.4/go.mod h1:LMSpPZ6DbqWFxNCHW77HeMg9I646SAhApZ/wKdgO/C0=
 golang.org/x/crypto v0.0.0-20180904163835-0709b304e793/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=

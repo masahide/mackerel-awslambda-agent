@@ -1,5 +1,7 @@
 package config
 
+import "time"
+
 // Host mackerel check host info
 type Host struct {
 	ID            string  `json:"id" default:"hostname"` // Primary key
@@ -18,25 +20,16 @@ type Check struct {
 
 // CheckRule rule of check Plugin
 type CheckRule struct {
-	Name                  string `json:"name"` // Primary key
-	PluginType            string `json:"pluginType"`
-	Command               string `json:"command"`
-	TimeoutSec            int    `json:"timeoutSeconds"`
-	PreventAlertAutoClose bool   `json:"preventAlertAutoClose"`
-	CheckInterval         int    `json:"checkInterval"`
-	Action                string `json:"action"`
-	NotificationInterval  int    `json:"notificationInterval"` // <- Post report
-	MaxCheckAttempts      int    `json:"maxCheckAttempts"`     // <- Post report
-
-}
-
-// State of check Plugin & host
-type State struct {
-	// Manual definition
-	ID           string `json:"id"`    // Primary key
-	State        []byte `json:"state"` // State data
-	HostID       string `json:"hostId"`
-	HostCehckSum string `json:"hostCheckSum"`
+	Name                  string        `json:"name"` // Primary key
+	PluginType            string        `json:"pluginType"`
+	Command               string        `json:"command"`
+	Env                   []string      `json:"env"`
+	Timeout               time.Duration `json:"timeout"`
+	PreventAlertAutoClose bool          `json:"preventAlertAutoClose"`
+	CheckInterval         int           `json:"checkInterval"`
+	Action                string        `json:"action"`
+	NotificationInterval  uint          `json:"notificationInterval"` // <- Post report
+	MaxCheckAttempts      uint          `json:"maxCheckAttempts"`     // <- Post report
 }
 
 /*

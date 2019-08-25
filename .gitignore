@@ -29,3 +29,6 @@ dist/
 bin/
 debug.test
 snap.login
+.dist/
+.*.yaml
+.*.yml
