@@ -52,11 +52,6 @@ func NewCheckPlugin(p client.ConfigProvider, params config.CheckPluginParams) *C
 	return plugin
 }
 
-/*
-func handler(ctx context.Context, params config.PluginParams) {
-}
-*/
-
 // Initialize is load config of CheckPlugin
 func (c *CheckPlugin) Initialize() error {
 	var err error
