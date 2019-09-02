@@ -45,7 +45,7 @@ func NewCheckPlugin(p client.ConfigProvider, params config.CheckPluginParams) *C
 		Manager: &state.Manager{
 			TTLDays:  env.StateTTLDays,
 			Org:      params.Org,
-			Hostname: params.Hostname,
+			Hostname: params.Host.Hostname,
 			Store:    dynamodbdriver.New(p, env.StateTable),
 		},
 	}
@@ -55,7 +55,7 @@ func NewCheckPlugin(p client.ConfigProvider, params config.CheckPluginParams) *C
 // Initialize is load config of CheckPlugin
 func (c *CheckPlugin) Initialize() error {
 	var err error
-	c.CheckState, err = c.GetCheckState(c.CheckRule.Name)
+	c.CheckState, err = c.GetCheckState(c.Rule.Name)
 	if err != nil {
 		return err
 	}
@@ -76,7 +76,7 @@ func (c *CheckPlugin) Finalize() error {
 	if err != nil {
 		return err
 	}
-	err = c.PutCheckState(c.CheckRule.Name, c.CheckState)
+	err = c.PutCheckState(c.Rule.Name, c.CheckState)
 	if err != nil {
 		return err
 	}
@@ -85,23 +85,23 @@ func (c *CheckPlugin) Finalize() error {
 }
 
 func (c *CheckPlugin) replaceStateFilePath(path string) string {
-	return strings.ReplaceAll(c.Command, stateFileKeyword, path)
+	return strings.ReplaceAll(c.Rule.Command, stateFileKeyword, path)
 }
 
 // Generate generates check report
 func (c *CheckPlugin) Generate(ctx context.Context) (*mackerel.CheckReport, error) {
-	cmd := cmdutil.CommandString(c.Command)
+	cmd := cmdutil.CommandString(c.Rule.Command)
 	now := time.Now()
-	stdout, stderr, exitCode, err := cmdutil.RunCommand(ctx, cmd, "", c.CheckRule.Env, c.Timeout)
+	stdout, stderr, exitCode, err := cmdutil.RunCommand(ctx, cmd, "", c.Rule.Env, c.Rule.Timeout)
 
 	if stderr != "" {
-		log.Printf("plugin %s (%s): %q", c.Name, c.Command, stderr)
+		log.Printf("plugin %s (%s): %q", c.Name, c.Rule.Command, stderr)
 	}
 
 	var message string
 	var status mackerel.CheckStatus
 	if err != nil {
-		log.Printf("Warning plugin %s (%s): %s", c.Name, c.Command, err)
+		log.Printf("Warning plugin %s (%s): %s", c.Name, c.Rule.Command, err)
 		message = err.Error()
 		status = mackerel.CheckStatusUnknown
 	} else {
@@ -115,8 +115,8 @@ func (c *CheckPlugin) Generate(ctx context.Context) (*mackerel.CheckReport, erro
 		Status:               status,
 		Message:              message,
 		OccurredAt:           now.Unix(),
-		NotificationInterval: c.NotificationInterval,
-		MaxCheckAttempts:     c.MaxCheckAttempts,
+		NotificationInterval: c.Rule.NotificationInterval,
+		MaxCheckAttempts:     c.Rule.MaxCheckAttempts,
 	}
 
 	LatestReport := c.LatestReport
