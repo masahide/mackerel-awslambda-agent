@@ -20,6 +20,7 @@ func TestNewAgentConfig(t *testing.T) {
 				HostsTable:      "mackerel-awslambda-hosts",
 				CheckRulesTable: "mackerel-awslambda-checkrules",
 				StateTable:      "mackerel-awslambda-state",
+				StateTTLDays:    90,
 			},
 		},
 	}

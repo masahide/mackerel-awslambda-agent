@@ -46,7 +46,7 @@ func (d *DynamoDB) Get(key string, out interface{}) error {
 	}
 	result, err := d.GetItem(input)
 	if err != nil {
-		return errors.Wrapf(err, "GetItem table:%s,key:%s", d.TableName, key)
+		return errors.Wrapf(err, "Dynamodb GetItem table=%s,key=%s", d.TableName, key)
 	}
 	return dynamodbattribute.UnmarshalMap(result.Item, out)
 }

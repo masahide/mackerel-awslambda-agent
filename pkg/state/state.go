@@ -6,6 +6,7 @@ import (
 
 	mackerel "github.com/mackerelio/mackerel-client-go"
 	"github.com/masahide/mackerel-awslambda-agent/pkg/store"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -53,7 +54,7 @@ func (m *Manager) ttl() int64 {
 func (m *Manager) GetCheckState(name string) (*CheckState, error) {
 	ps, err := m.GetPluginState(name)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "GetPluginState")
 	}
 	return decodeCheckState(ps)
 }
@@ -61,7 +62,13 @@ func (m *Manager) GetCheckState(name string) (*CheckState, error) {
 func decodeCheckState(in *PluginState) (*CheckState, error) {
 	var res CheckState
 	err := json.Unmarshal(in.State, &res)
-	return &res, err
+	if err != nil {
+		return nil, errors.Wrapf(err, "json.Unmarshal data:[%s]", in.State)
+	}
+	if len(res.StateFiles) == 0 {
+		res.StateFiles = []byte("{}")
+	}
+	return &res, nil
 }
 
 // PutCheckState Extract checkState from pluginState
@@ -105,6 +112,12 @@ func (m *Manager) GetPluginState(name string) (*PluginState, error) {
 	res := &PluginState{}
 	if err := m.Get(id, res); err != nil {
 		return nil, err
+	}
+	if len(res.ID) == 0 {
+		res.ID = m.Org + "-" + m.Hostname + "-" + name
+	}
+	if len(res.State) == 0 {
+		res.State = []byte("{}")
 	}
 	return res, nil
 }

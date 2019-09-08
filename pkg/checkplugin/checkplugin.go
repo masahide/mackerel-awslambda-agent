@@ -16,12 +16,19 @@ import (
 	"github.com/masahide/mackerel-awslambda-agent/pkg/state"
 	"github.com/masahide/mackerel-awslambda-agent/pkg/statefile"
 	"github.com/masahide/mackerel-awslambda-agent/pkg/store/dynamodbdriver"
+	"github.com/pkg/errors"
 )
 
 const (
 	tempDirPrefix    = "mackerel"
-	stateFileKeyword = "%{STATE}"
+	stateFileKeyword = "%{STATE_FILE}"
 )
+
+var exitCodeMap = map[int]mackerel.CheckStatus{
+	0: mackerel.CheckStatusOK,
+	1: mackerel.CheckStatusWarning,
+	2: mackerel.CheckStatusCritical,
+}
 
 // CheckPlugin struct
 type CheckPlugin struct {
@@ -52,56 +59,68 @@ func NewCheckPlugin(p client.ConfigProvider, params config.CheckPluginParams) *C
 	return plugin
 }
 
-// Initialize is load config of CheckPlugin
-func (c *CheckPlugin) Initialize() error {
+// Generate generates check report
+func (c *CheckPlugin) Generate(ctx context.Context) (*mackerel.CheckReport, error) {
+	if err := c.initialize(); err != nil {
+		return nil, errors.Wrap(err, "initialize")
+	}
+	defer func() {
+		if err := c.finalize(); err != nil {
+			log.Printf("finalize err:%s", err)
+		}
+	}()
+	return c.generate(ctx)
+}
+
+// initialize is load config of CheckPlugin
+func (c *CheckPlugin) initialize() error {
 	var err error
 	c.CheckState, err = c.GetCheckState(c.Rule.Name)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "GetCheckState")
 	}
 	c.tmpDir, err = ioutil.TempDir(c.Env.TempDir, tempDirPrefix)
 	if err != nil {
 		log.Fatal(err)
 	}
 	if err = statefile.PutStatefiles(c.tmpDir, c.StateFiles); err != nil {
-		return err
+		return errors.Wrap(err, "PutStatefiles")
 	}
 	return nil
 }
 
-// Finalize remove temp dir
-func (c *CheckPlugin) Finalize() error {
+// finalize remove temp dir
+func (c *CheckPlugin) finalize() error {
 	var err error
 	c.StateFiles, err = statefile.GetStatefiles(c.tmpDir)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "GetStatefiles")
 	}
 	err = c.PutCheckState(c.Rule.Name, c.CheckState)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "PutCheckState")
 	}
 	return os.RemoveAll(c.tmpDir)
 
 }
 
-func (c *CheckPlugin) replaceStateFilePath(path string) string {
-	return strings.ReplaceAll(c.Rule.Command, stateFileKeyword, path)
+func (c *CheckPlugin) replaceStateFilePath(cmd string) string {
+	return strings.ReplaceAll(cmd, stateFileKeyword, c.tmpDir)
 }
 
-// Generate generates check report
-func (c *CheckPlugin) Generate(ctx context.Context) (*mackerel.CheckReport, error) {
-	cmd := cmdutil.CommandString(c.Rule.Command)
+func (c *CheckPlugin) generate(ctx context.Context) (*mackerel.CheckReport, error) {
+	cmd := cmdutil.CommandString(c.replaceStateFilePath(c.Rule.Command))
 	now := time.Now()
 	stdout, stderr, exitCode, err := cmdutil.RunCommand(ctx, cmd, "", c.Rule.Env, c.Rule.Timeout)
 
 	if stderr != "" {
-		log.Printf("plugin %s (%s): %q", c.Name, c.Rule.Command, stderr)
+		log.Printf("plugin %s (%v): %q", c.Name, cmd, stderr)
 	}
 
 	var message string
 	var status mackerel.CheckStatus
 	if err != nil {
-		log.Printf("Warning plugin %s (%s): %s", c.Name, c.Rule.Command, err)
+		log.Printf("Warning plugin %s (%v): %s", c.Name, cmd, err)
 		message = err.Error()
 		status = mackerel.CheckStatusUnknown
 	} else {
@@ -129,12 +148,6 @@ func (c *CheckPlugin) Generate(ctx context.Context) (*mackerel.CheckReport, erro
 		return nil, nil
 	}
 	return &newReport, nil
-}
-
-var exitCodeMap = map[int]mackerel.CheckStatus{
-	0: mackerel.CheckStatusOK,
-	1: mackerel.CheckStatusWarning,
-	2: mackerel.CheckStatusCritical,
 }
 
 func exitCodeToStatus(exitCode int) mackerel.CheckStatus {
