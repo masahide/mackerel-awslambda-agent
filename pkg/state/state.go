@@ -6,11 +6,12 @@ import (
 
 	mackerel "github.com/mackerelio/mackerel-client-go"
 	"github.com/masahide/mackerel-awslambda-agent/pkg/store"
-	"github.com/pkg/errors"
+	"golang.org/x/xerrors"
 )
 
 const (
 	defaultCheckStateTTLDays = 90
+	tempDirPrefix            = "mackerel"
 )
 
 // CheckState is check plugin state
@@ -40,6 +41,7 @@ type Manager struct {
 	Org      string
 	Hostname string
 	store.Store
+	tmpDir string
 }
 
 func (m *Manager) ttl() int64 {
@@ -54,7 +56,7 @@ func (m *Manager) ttl() int64 {
 func (m *Manager) GetCheckState(name string) (*CheckState, error) {
 	ps, err := m.GetPluginState(name)
 	if err != nil {
-		return nil, errors.Wrap(err, "GetPluginState")
+		return nil, xerrors.Errorf("GetPluginState err:%w", err)
 	}
 	return decodeCheckState(ps)
 }
@@ -63,7 +65,7 @@ func decodeCheckState(in *PluginState) (*CheckState, error) {
 	var res CheckState
 	err := json.Unmarshal(in.State, &res)
 	if err != nil {
-		return nil, errors.Wrapf(err, "json.Unmarshal data:[%s]", in.State)
+		return nil, xerrors.Errorf("json.Unmarshal data:[%s] err:%w", in.State, err)
 	}
 	if len(res.StateFiles) == 0 {
 		res.StateFiles = []byte("{}")

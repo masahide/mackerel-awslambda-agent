@@ -5,7 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
-	"github.com/pkg/errors"
+	"golang.org/x/xerrors"
 )
 
 // DynamoDB setting
@@ -46,7 +46,7 @@ func (d *DynamoDB) Get(key string, out interface{}) error {
 	}
 	result, err := d.GetItem(input)
 	if err != nil {
-		return errors.Wrapf(err, "Dynamodb GetItem table=%s,key=%s", d.TableName, key)
+		return xerrors.Errorf("Dynamodb GetItem table=%s,key=%s err:%w", d.TableName, key, err)
 	}
 	return dynamodbattribute.UnmarshalMap(result.Item, out)
 }
@@ -55,7 +55,7 @@ func (d *DynamoDB) Get(key string, out interface{}) error {
 func (d *DynamoDB) Put(in interface{}) error {
 	attr, err := dynamodbattribute.MarshalMap(in)
 	if err != nil {
-		return errors.Wrap(err, "MarshalMap err")
+		return xerrors.Errorf("MarshalMap err:%w", err)
 	}
 	_, err = d.PutItem(&dynamodb.PutItemInput{Item: attr})
 	return err

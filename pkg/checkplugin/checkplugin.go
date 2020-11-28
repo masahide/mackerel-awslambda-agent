@@ -2,10 +2,10 @@ package checkplugin
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/client"
@@ -16,12 +16,11 @@ import (
 	"github.com/masahide/mackerel-awslambda-agent/pkg/state"
 	"github.com/masahide/mackerel-awslambda-agent/pkg/statefile"
 	"github.com/masahide/mackerel-awslambda-agent/pkg/store/dynamodbdriver"
-	"github.com/pkg/errors"
+	"golang.org/x/xerrors"
 )
 
 const (
-	tempDirPrefix    = "mackerel"
-	stateFileKeyword = "%{STATE_FILE}"
+	tempDirPrefix = "mackerel"
 )
 
 var exitCodeMap = map[int]mackerel.CheckStatus{
@@ -62,7 +61,7 @@ func NewCheckPlugin(p client.ConfigProvider, params config.CheckPluginParams) *C
 // Generate generates check report
 func (c *CheckPlugin) Generate(ctx context.Context) (*mackerel.CheckReport, error) {
 	if err := c.initialize(); err != nil {
-		return nil, errors.Wrap(err, "initialize")
+		return nil, xerrors.Errorf("initialize err:%w", err)
 	}
 	defer func() {
 		if err := c.finalize(); err != nil {
@@ -77,14 +76,14 @@ func (c *CheckPlugin) initialize() error {
 	var err error
 	c.CheckState, err = c.GetCheckState(c.Rule.Name)
 	if err != nil {
-		return errors.Wrap(err, "GetCheckState")
+		return xerrors.Errorf("GetCheckState err:%w", err)
 	}
 	c.tmpDir, err = ioutil.TempDir(c.Env.TempDir, tempDirPrefix)
 	if err != nil {
 		log.Fatal(err)
 	}
 	if err = statefile.PutStatefiles(c.tmpDir, c.StateFiles); err != nil {
-		return errors.Wrap(err, "PutStatefiles")
+		return xerrors.Errorf("PutStatefiles err:%w", err)
 	}
 	return nil
 }
@@ -94,24 +93,21 @@ func (c *CheckPlugin) finalize() error {
 	var err error
 	c.StateFiles, err = statefile.GetStatefiles(c.tmpDir)
 	if err != nil {
-		return errors.Wrap(err, "GetStatefiles")
+		return xerrors.Errorf("GetStatefiles err:%w", err)
 	}
 	err = c.PutCheckState(c.Rule.Name, c.CheckState)
 	if err != nil {
-		return errors.Wrap(err, "PutCheckState")
+		return xerrors.Errorf("PutCheckState err:%w", err)
 	}
 	return os.RemoveAll(c.tmpDir)
 
 }
 
-func (c *CheckPlugin) replaceStateFilePath(cmd string) string {
-	return strings.ReplaceAll(cmd, stateFileKeyword, c.tmpDir)
-}
-
 func (c *CheckPlugin) generate(ctx context.Context) (*mackerel.CheckReport, error) {
-	cmd := cmdutil.CommandString(c.replaceStateFilePath(c.Rule.Command))
+	cmd := cmdutil.CommandString(c.Rule.Command)
 	now := time.Now()
-	stdout, stderr, exitCode, err := cmdutil.RunCommand(ctx, cmd, "", c.Rule.Env, c.Rule.Timeout)
+	envs := append(c.Rule.Env, fmt.Sprintf("MACKEREL_PLUGIN_WORKDIR=%s", c.tmpDir))
+	stdout, stderr, exitCode, err := cmdutil.RunCommand(ctx, cmd, "", envs, c.Rule.Timeout)
 
 	if stderr != "" {
 		log.Printf("plugin %s (%v): %q", c.Name, cmd, stderr)

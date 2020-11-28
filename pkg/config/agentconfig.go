@@ -108,7 +108,7 @@ func (a *AgentConfig) getStates() (map[string]state.CheckState, error) {
 func (a *AgentConfig) PutState(in state.CheckState) error {
 	attr, err := dynamodbattribute.MarshalMap(in)
 	if err != nil {
-		return errors.Wrap(err, "MarshalMap err")
+        return xerrors.Errorf("MarshalMap err:%w", err)
 	}
 	_, err = a.PutItem(&dynamodb.PutItemInput{Item: attr})
 	return err
