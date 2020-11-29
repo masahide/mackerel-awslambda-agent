@@ -1,41 +1,33 @@
-@startuml
+@startuml mackerel-awslambda-agent - mackerel aws lambda agent
 
-package "lambda:start" {
-    start as [configure\nplugin invoker]
-}
+!define AWSPuml https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/master/dist
+!includeurl AWSPuml/AWSCommon.puml
+!includeurl AWSPuml/Storage/SimpleStorageServiceS3.puml
+!includeurl AWSPuml/Compute/Lambda.puml
+!includeurl AWSPuml/ApplicationIntegration/SQS.puml
 
-package "lambda:agent_plugins" {
-    plugin1 as [mackerel-plugin-redis]
-    plugin2 as [mackerel-plugin-mysql]
-}
+left to right direction
 
-package "lambda:check_plugins"{
-    plugin3 as [check-aws-cloudwatch-logs]
-}
+agent "Mackerel" as mackerel #fff
 
-database {
-   sqs as [SQS] #FFAADF
-}
+SQS(reportQueue, "Report Queue", "check Reports")
+SimpleStorageServiceS3(config, "Mackerel config", "mackerel configfile")
+Lambda(sender, "sender", "Post a report to mackerel")
+Lambda(checks1, "checks", "check plugin 1")
+Lambda(checks2, "checks", "check plugin 2")
+Lambda(checks3, "checks", "check plugin 3")
+Lambda(invoker, "invoker", "plugin invoker")
 
-package "lambda:end" {
-    end as [reducer\nsender]
-}
-
-cloud {
-  mackerel as [mackerel:api]  #A9FFDF
-}
-
-start --> plugin1
-start --> plugin2
-start --> plugin3
-
-plugin1 --> sqs
-plugin2 --> sqs
-plugin3 --> sqs
-
-
-sqs --> end
-
-end --> mackerel
+config -> invoker : load config
+invoker --> checks1 : "async invoke"
+invoker --> checks2 : "async invoke"
+invoker --> checks3 : "async invoke"
+checks1 --> reportQueue : send report
+checks2 --> reportQueue : send report
+checks3 --> reportQueue : send report
+reportQueue <-- sender : poling
+sender -> mackerel
 
 @enduml
+
+

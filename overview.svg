@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="496px" preserveAspectRatio="none" style="width:1038px;height:496px;" version="1.1" viewBox="0 0 1038 496" width="1038px" zoomAndPan="magnify"><defs><filter height="300%" id="fee1vb4v89nv9" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><!--MD5=[821b7ad204547f33266cac7f28c02c94]
+entity mackerel--><rect fill="#FFFFFF" filter="url(#fee1vb4v89nv9)" height="36.2969" style="stroke: #A80036; stroke-width: 1.5;" width="82" x="890.5" y="355.5"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="62" x="900.5" y="378.4951">Mackerel</text><!--MD5=[6a4f199ba5b4024986d8e8da9fb92fda]
+entity reportQueue--><rect fill="#FFFFFF" filter="url(#fee1vb4v89nv9)" height="130.5625" style="stroke: #FF9900; stroke-width: 1.5;" width="145" x="591" y="189"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="39" x="644" y="210.1387">«SQS»</text><text fill="#000000" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="125" x="601" y="227.8203">Report Queue</text><image height="64" width="64" x="631.5" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAClElEQVR42u1au0oEQRCcD/YP/AO/wNjEyFRjAzMzwUxQMRAOBIULBEELCopm1pvtmR2P27GPZbnb69nrqn5Mzeylh6PTVR8pAASAABAAAkAACABDAXg6Pns9vdqcX79d3urAx5eTC3x1uADgHxz9fN58F18wgBmMDwgA+LZ+4/3HzT0ox3UejAYufr1vZba9e+wCIy1kHX7Ibzg6myQMlJAA1cK8agcAd+U6aG4YThg4NwxfCgDM0Xv4saTcl9+nBQDTBsR3SWLQTwxIrX0AIGfwvmNPBBFMp4Y41AEASd29FwbGobYeUm2sQVXHLv7r/avYqQDAZr+kYzjzE+f+ANg0Ub5/KmzAPYvBH+TU5b6cnpyhh1lBTdQylfz0FyKr1jTLHAyYioWmWRWE5Fc7hewHqZJDAAPLLBqUqJq2yn0MfPmVUvJE3JMb6oN8gUV4CT9wTCWqxznn76Yy8dJqcGg2y2kMmvHGCk8O53VPk5Esx6jZUKRZrUYud4XeZgsbufzDdfy2XccQgBxiXmWsW3krFgozdHLOi7q15Y8eCxXO/FhoZXaeYknYauYVy7p43BWHVOgqGW41U7krVMJgDaYABI8GwE97YqDBdCYu98BUmHSnfhAY1zGkU1Fm5941UFGFGf22Y0kWDaaOlgPbCIDrwzYA1J4ZAKDqCcCTQrYwalNIJWRVdM8UUhFrmasZtHsRW5pUxFlnqy7irI3aPHG2UZZ4Qxu1Lbu9jdpNB96Fmw6epebCiYxSz1JWFvB7khIZnj1JiWYxN91FrBJzlBI91ejq5fTqFzSrX1KOsKgfYVtl9Rtb2cboKrcWR9jcHWF7fYQHHCM8YhrhId8gj1kHedAd/5UIAAEgAASAABAA/iOAH0l/94FwhLVnAAAAAElFTkSuQmCC" y="231.5938"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="100" x="613.5" y="306.7324">[check Reports]</text><!--MD5=[caf660ac2a54b55a5c31b5515889e628]
+entity config--><rect fill="#FFFFFF" filter="url(#fee1vb4v89nv9)" height="130.5625" style="stroke: #FF9900; stroke-width: 1.5;" width="186" x="6" y="8"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="166" x="16" y="29.1387">«SimpleStorageServiceS3»</text><text fill="#000000" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="141" x="28.5" y="46.8203">Mackerel config</text><image height="64" width="64" x="67" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAC+UlEQVR42u1aO0pEQRDsC3sDwQPoBfYCYmYgaLiRmAgmghgJBhqKGBhqQUHTzLxP93yerMwyLG/fZ7prul91zczK2c3xQTcZAAaAAWAAGAAGgD7t5PLoAABYL3f70/O7HdrVw0XScBJX0fSpVvCk2Gl4A8/2T9fP749f358/vg/ufPt4vX+5Jao/AAC/4TScyD0DEniGhhuShpO4iqcSqHwKYIpTLgAAAwZj1nY+kMyNuWYzDQ/a0OEAODsCgK/WErO5Jo/1WTsu6DyaVy4ANIDea2K9mpkKI4RhHQCcRqdIX9joyozoXG01A4BOkTDoFF1vwOswwbdCCbcZgILsLHgl1Fb7FOIHaUoYraKhJQWuKyO1TCGyhBaghEBtoD3FNSfTpKTwGMPUEgAs6aiQvJMShkssYfCGZWGysWzjtslyhvOEhJ849kfYRaMwwLy05B0VEXOCQktKGWG4ADCyCTPYZNDiyjHOGwWFqrpJuYqfLJeN6wD6Zdp4+p2UD4mUWK2Yfg71AtDI9q4D0SLgTSEyKWD4UxOP8OUOeRMtAl4AJAc/u5G4+PFTiqW7xgCiXROwxeCJQwGHBuS0MqmzqYD1wyhI1ACASSZdjVsuE+bEiHIovrtMaPxMuiDUVDXgQGdFiYmocBSnBxyeGiYljGReagOiQoiXnDNMLwCWgmiCLmQXRsROiDlAfM0AiZc8cZAQsUQpYjUguTpkdjEaHnMSovaQ0A01RjgRfC0jUFYm/dHQCOvynpPxJCpUOgEonnkHABSUAj+AAiEdA1Bjo+voyAZR7pqfgRSiVmnIpAnFlTFEbHG3E5PWcLREzUT1eu8qKdFMbV4KdEm0TKfINlzRTylKyFKNqO6k1WWzoeoU2FgKNWdS9FPDoWEAMMaKoxPcYiQ6v1HlvNEupc42yNygjmS1cHmHT/dn7YSmprZIsXzPV5jtMjVXQnWPdW6bFWcq3yipTACuUefbxgvr0gSZbC8c3l8Nxr9VBoABYAAYAAaAAeA/APgF8KunTwinKyMAAAAASUVORK5CYII=" y="50.5938"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="127" x="35.5" y="125.7324">[mackerel configfile]</text><!--MD5=[b84dfc3c68caa5bb5eca96917ddde04e]
+entity sender--><rect fill="#FFFFFF" filter="url(#fee1vb4v89nv9)" height="130.5625" style="stroke: #FF9900; stroke-width: 1.5;" width="191" x="836" y="189"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="63" x="900" y="210.1387">«Lambda»</text><text fill="#000000" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="62" x="900.5" y="227.8203">sender</text><image height="64" width="64" x="899.5" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAACIklEQVR42u2aTUoEMRCF6+zewCN4AcGdW127cOdW18PAIAyIIFpQEML0JK86eekfrCbMoqmZyVcvXT9Jy+H+ZtdDAiAAAiAAAiAA/iHA8fH28+XBObYI8H14/3VfQxm6AM5vT3Xfq4Ga/ZxPGwXQheS0HCfCcIDT851aqv1eAZKxkuwVQNfPOBGWANChz/EgERYCGCdCF4B6VBkuRinxDRKBnMj0fonBRPj6eN0EgGYonas6NY2EVAr5SQT/wlu6mIMh3xIzVwRyNVrPu+p7U4koAhkARhsTQT+32w/Uow1dBD4AFEGfAaIIHACdTT4hjwhqQxFBWMEnn/GSIggr8uTxEeZdY6aIIBT3Wy7LH00Y8k2E/kanFyDN42LGMO8m8jUB8pUwjY9QBEq3Kf3uT8/iVIR6yKeI0A4wnd8qIgjL/VcrBShCf6MjLPeX7sOQ39nyt/cDpbVxMePRIgjR/c0i9HSbwnX/1SQF826PCNLgflirTQ3qeben5Ze2arni/qsGUITmblO47q8saNht2hfzXQJPfhBus1IxgHnXRMgvT70txHYRBnWYd9PumDmCDADdD7dV/FvtZkkGgCnTU9g4ix8+gNO7sLR0hnw+APScv670FD9kAOjdWT2uRwQyAPTu3AYXRjMmQNo1KR2qprPUhvOO0vmsf99FnKUbvGZt8qS82/+b4vkzz/sEc3d4VFjKb8bbKgEQAAEQAAEQAGuOP+PJ6ckrwsCxAAAAAElFTkSuQmCC" y="231.5938"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="171" x="846" y="306.7324">[Post a report to mackerel]</text><!--MD5=[ec6539119a9965b55a5d061afc1a8c00]
+entity checks1--><rect fill="#FFFFFF" filter="url(#fee1vb4v89nv9)" height="130.5625" style="stroke: #FF9900; stroke-width: 1.5;" width="121" x="334" y="23"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="63" x="363" y="44.1387">«Lambda»</text><text fill="#000000" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="63" x="363" y="61.8203">checks</text><image height="64" width="64" x="362.5" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAACIklEQVR42u2aTUoEMRCF6+zewCN4AcGdW127cOdW18PAIAyIIFpQEML0JK86eekfrCbMoqmZyVcvXT9Jy+H+ZtdDAiAAAiAAAiAA/iHA8fH28+XBObYI8H14/3VfQxm6AM5vT3Xfq4Ga/ZxPGwXQheS0HCfCcIDT851aqv1eAZKxkuwVQNfPOBGWANChz/EgERYCGCdCF4B6VBkuRinxDRKBnMj0fonBRPj6eN0EgGYonas6NY2EVAr5SQT/wlu6mIMh3xIzVwRyNVrPu+p7U4koAhkARhsTQT+32w/Uow1dBD4AFEGfAaIIHACdTT4hjwhqQxFBWMEnn/GSIggr8uTxEeZdY6aIIBT3Wy7LH00Y8k2E/kanFyDN42LGMO8m8jUB8pUwjY9QBEq3Kf3uT8/iVIR6yKeI0A4wnd8qIgjL/VcrBShCf6MjLPeX7sOQ39nyt/cDpbVxMePRIgjR/c0i9HSbwnX/1SQF826PCNLgflirTQ3qeben5Ze2arni/qsGUITmblO47q8saNht2hfzXQJPfhBus1IxgHnXRMgvT70txHYRBnWYd9PumDmCDADdD7dV/FvtZkkGgCnTU9g4ix8+gNO7sLR0hnw+APScv670FD9kAOjdWT2uRwQyAPTu3AYXRjMmQNo1KR2qprPUhvOO0vmsf99FnKUbvGZt8qS82/+b4vkzz/sEc3d4VFjKb8bbKgEQAAEQAAEQAGuOP+PJ6ckrwsCxAAAAAElFTkSuQmCC" y="65.5938"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="101" x="344" y="140.7324">[check plugin 1]</text><!--MD5=[75a4722366427b8fe74bd7beb3dd8f9b]
+entity checks2--><rect fill="#FFFFFF" filter="url(#fee1vb4v89nv9)" height="130.5625" style="stroke: #FF9900; stroke-width: 1.5;" width="121" x="334" y="189"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="63" x="363" y="210.1387">«Lambda»</text><text fill="#000000" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="63" x="363" y="227.8203">checks</text><image height="64" width="64" x="362.5" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAACIklEQVR42u2aTUoEMRCF6+zewCN4AcGdW127cOdW18PAIAyIIFpQEML0JK86eekfrCbMoqmZyVcvXT9Jy+H+ZtdDAiAAAiAAAiAA/iHA8fH28+XBObYI8H14/3VfQxm6AM5vT3Xfq4Ga/ZxPGwXQheS0HCfCcIDT851aqv1eAZKxkuwVQNfPOBGWANChz/EgERYCGCdCF4B6VBkuRinxDRKBnMj0fonBRPj6eN0EgGYonas6NY2EVAr5SQT/wlu6mIMh3xIzVwRyNVrPu+p7U4koAhkARhsTQT+32w/Uow1dBD4AFEGfAaIIHACdTT4hjwhqQxFBWMEnn/GSIggr8uTxEeZdY6aIIBT3Wy7LH00Y8k2E/kanFyDN42LGMO8m8jUB8pUwjY9QBEq3Kf3uT8/iVIR6yKeI0A4wnd8qIgjL/VcrBShCf6MjLPeX7sOQ39nyt/cDpbVxMePRIgjR/c0i9HSbwnX/1SQF826PCNLgflirTQ3qeben5Ze2arni/qsGUITmblO47q8saNht2hfzXQJPfhBus1IxgHnXRMgvT70txHYRBnWYd9PumDmCDADdD7dV/FvtZkkGgCnTU9g4ix8+gNO7sLR0hnw+APScv670FD9kAOjdWT2uRwQyAPTu3AYXRjMmQNo1KR2qprPUhvOO0vmsf99FnKUbvGZt8qS82/+b4vkzz/sEc3d4VFjKb8bbKgEQAAEQAAEQAGuOP+PJ6ckrwsCxAAAAAElFTkSuQmCC" y="231.5938"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="101" x="344" y="306.7324">[check plugin 2]</text><!--MD5=[7589c4f1432af662abae5e2a6ee9f506]
+entity checks3--><rect fill="#FFFFFF" filter="url(#fee1vb4v89nv9)" height="130.5625" style="stroke: #FF9900; stroke-width: 1.5;" width="121" x="334" y="355"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="63" x="363" y="376.1387">«Lambda»</text><text fill="#000000" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="63" x="363" y="393.8203">checks</text><image height="64" width="64" x="362.5" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAACIklEQVR42u2aTUoEMRCF6+zewCN4AcGdW127cOdW18PAIAyIIFpQEML0JK86eekfrCbMoqmZyVcvXT9Jy+H+ZtdDAiAAAiAAAiAA/iHA8fH28+XBObYI8H14/3VfQxm6AM5vT3Xfq4Ga/ZxPGwXQheS0HCfCcIDT851aqv1eAZKxkuwVQNfPOBGWANChz/EgERYCGCdCF4B6VBkuRinxDRKBnMj0fonBRPj6eN0EgGYonas6NY2EVAr5SQT/wlu6mIMh3xIzVwRyNVrPu+p7U4koAhkARhsTQT+32w/Uow1dBD4AFEGfAaIIHACdTT4hjwhqQxFBWMEnn/GSIggr8uTxEeZdY6aIIBT3Wy7LH00Y8k2E/kanFyDN42LGMO8m8jUB8pUwjY9QBEq3Kf3uT8/iVIR6yKeI0A4wnd8qIgjL/VcrBShCf6MjLPeX7sOQ39nyt/cDpbVxMePRIgjR/c0i9HSbwnX/1SQF826PCNLgflirTQ3qeben5Ze2arni/qsGUITmblO47q8saNht2hfzXQJPfhBus1IxgHnXRMgvT70txHYRBnWYd9PumDmCDADdD7dV/FvtZkkGgCnTU9g4ix8+gNO7sLR0hnw+APScv670FD9kAOjdWT2uRwQyAPTu3AYXRjMmQNo1KR2qprPUhvOO0vmsf99FnKUbvGZt8qS82/+b4vkzz/sEc3d4VFjKb8bbKgEQAAEQAAEQAGuOP+PJ6ckrwsCxAAAAAElFTkSuQmCC" y="397.5938"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="101" x="344" y="472.7324">[check plugin 3]</text><!--MD5=[e15b62b0f1af66128c9c4b2f0b1b739e]
+entity invoker--><rect fill="#FFFFFF" filter="url(#fee1vb4v89nv9)" height="130.5625" style="stroke: #FF9900; stroke-width: 1.5;" width="117" x="40.5" y="189"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="63" x="67.5" y="210.1387">«Lambda»</text><text fill="#000000" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="66" x="66" y="227.8203">invoker</text><image height="64" width="64" x="67" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAACIklEQVR42u2aTUoEMRCF6+zewCN4AcGdW127cOdW18PAIAyIIFpQEML0JK86eekfrCbMoqmZyVcvXT9Jy+H+ZtdDAiAAAiAAAiAA/iHA8fH28+XBObYI8H14/3VfQxm6AM5vT3Xfq4Ga/ZxPGwXQheS0HCfCcIDT851aqv1eAZKxkuwVQNfPOBGWANChz/EgERYCGCdCF4B6VBkuRinxDRKBnMj0fonBRPj6eN0EgGYonas6NY2EVAr5SQT/wlu6mIMh3xIzVwRyNVrPu+p7U4koAhkARhsTQT+32w/Uow1dBD4AFEGfAaIIHACdTT4hjwhqQxFBWMEnn/GSIggr8uTxEeZdY6aIIBT3Wy7LH00Y8k2E/kanFyDN42LGMO8m8jUB8pUwjY9QBEq3Kf3uT8/iVIR6yKeI0A4wnd8qIgjL/VcrBShCf6MjLPeX7sOQ39nyt/cDpbVxMePRIgjR/c0i9HSbwnX/1SQF826PCNLgflirTQ3qeben5Ze2arni/qsGUITmblO47q8saNht2hfzXQJPfhBus1IxgHnXRMgvT70txHYRBnWYd9PumDmCDADdD7dV/FvtZkkGgCnTU9g4ix8+gNO7sLR0hnw+APScv670FD9kAOjdWT2uRwQyAPTu3AYXRjMmQNo1KR2qprPUhvOO0vmsf99FnKUbvGZt8qS82/+b4vkzz/sEc3d4VFjKb8bbKgEQAAEQAAEQAGuOP+PJ6ckrwsCxAAAAAElFTkSuQmCC" y="231.5938"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="97" x="50.5" y="306.7324">[plugin invoker]</text><!--MD5=[bc8defcb13660bf1afe557195bdd16cc]
+link config to invoker--><path d="M99,139.1811 C99,153.6012 99,168.9324 99,183.5492 " fill="none" id="config-&gt;invoker" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="99,188.8989,103,179.8989,99,183.8989,95,179.8989,99,188.8989" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="69" x="54" y="168.6387">load config</text><!--MD5=[f75c4b4cd5c422d0dd0566993967e568]
+link invoker to checks1--><path d="M157.7346,221.5053 C207.2396,193.6954 278.0008,153.9446 329.2597,125.1494 " fill="none" id="invoker-&gt;checks1" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="333.8464,122.5727,324.0407,123.4935,329.4872,125.0217,327.959,130.4682,333.8464,122.5727" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="80" x="223" y="139.6387">async invoke</text><!--MD5=[f3a87a9a257c0314523ca991f7cc2fb4]
+link invoker to checks2--><path d="M157.7346,254.5 C207.0404,254.5 277.4316,254.5 328.6399,254.5 " fill="none" id="invoker-&gt;checks2" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="333.8464,254.5,324.8464,250.5,328.8464,254.5,324.8464,258.5,333.8464,254.5" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="80" x="223" y="251.6387">async invoke</text><!--MD5=[14507c5d9442b68eebe4756829b45d63]
+link invoker to checks3--><path d="M157.7346,287.4947 C207.2396,315.3046 278.0008,355.0554 329.2597,383.8506 " fill="none" id="invoker-&gt;checks3" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="333.8464,386.4273,327.959,378.5318,329.4872,383.9783,324.0407,385.5065,333.8464,386.4273" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="80" x="223" y="325.6387">async invoke</text><!--MD5=[27b3b59050d66f2af3a4dd3960dcf483]
+link checks1 to reportQueue--><path d="M455.2043,125.9606 C494.0059,149.9052 544.6754,181.1733 586.3238,206.8746 " fill="none" id="checks1-&gt;reportQueue" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="590.5821,209.5023,585.0238,201.3718,586.3271,206.8765,580.8224,208.1798,590.5821,209.5023" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="74" x="486" y="144.6387">send report</text><!--MD5=[d26972455dfca7b3a25311073d47dcd8]
+link checks2 to reportQueue--><path d="M455.2043,254.5 C493.7708,254.5 544.0617,254.5 585.5656,254.5 " fill="none" id="checks2-&gt;reportQueue" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="590.5821,254.5,581.5821,250.5,585.5821,254.5,581.5821,258.5,590.5821,254.5" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="74" x="486" y="251.6387">send report</text><!--MD5=[dd5f6351eb4401e13a913351fdd42ad4]
+link checks3 to reportQueue--><path d="M455.2043,383.0394 C494.0059,359.0948 544.6754,327.8267 586.3238,302.1254 " fill="none" id="checks3-&gt;reportQueue" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="590.5821,299.4977,580.8224,300.8202,586.3271,302.1235,585.0238,307.6282,590.5821,299.4977" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="74" x="486" y="320.6387">send report</text><!--MD5=[f9a8bf0ebf81c269eec108958923e052]
+reverse link reportQueue to sender--><path d="M741.1082,254.5 C770.6663,254.5 804.702,254.5 835.748,254.5 " fill="none" id="reportQueue&lt;-sender" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="736.0247,254.5,745.0247,258.5,741.0247,254.5,745.0247,250.5,736.0247,254.5" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="38" x="767" y="251.6387">poling</text><!--MD5=[23d10d3dc1dec4af11c58a2cd80c5764]
+link sender to mackerel--><path d="M931.5,320.3026 C931.5,330.257 931.5,340.2113 931.5,350.1656 " fill="none" id="sender-&gt;mackerel" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="931.5,355.3711,935.5,346.3711,931.5,350.3711,927.5,346.3711,931.5,355.3711" style="stroke: #666666; stroke-width: 1.0;"/><!--MD5=[2bc72e19eda791dcca53fd9c3f6f0f9e]
+@startuml
+
+
+
+
+skinparam defaultTextAlignment center
+
+skinparam wrapWidth 200
+skinparam maxMessageSize 150
+
+skinparam rectangle {
+    StereotypeFontSize 12
+}
+
+skinparam Arrow {
+    Color #666666
+    FontColor #666666
+    FontSize 12
+}
+
+
+
+
+
+
+
+
+
+sprite $SimpleStorageServiceS3 [64x64/16z] {
+xPO54bmn34DbYYtV_xw5fTcq6vUvRp2SMDAVpn_6V_xJNx-iCjU5h2AxFtzjhJ31CwA-afz5XLwNc7jSS5EvzYmsPz80oFMmVa1MBXD0WYCEIDJBK_gwkIJF
+66I-OXcGFB6WrHpf1JsE1LQJCoseytf9ZZG3CjmVi6IVZH42A4yaH2_g5NV3NHKC1Q0mdYWeb-4zQXuhRwpmcuEy4juy8NAH-SczcuEBFTTOKJUhLEKAlnAn
+icvHR1_qRzi6-m9xYvwXE1c0d95XFHUYzmwruWQ4PnAxE0N0-qE9TgRH102lhSURPqG-2kHrX_s5eu0RTVMivKC-vu0XNsL60OswJfWorlvIm6RQBLeA0s8m
+mEbvvGA8GvXoiE1Sthv5IqFFamh6YG0mLW32WKvuPTPaRmviwHqCS61AxpnXtlxpBoZWp1hpKH1kZ0cUvPqJFDjhJl2H7j8xL7Y8r_097kCz7l7ryiy2zbM-
+cH9uiL_bDnNEJv82M6IHVOTaBHV0-3c4082eUSIAyFl_cov-5iqCKpmZvgk-xV-Llo7_-SzR
+}
+
+skinparam rectangle<<SimpleStorageServiceS3>> {
+    BackgroundColor #FFFFFF
+    BorderColor #FF9900
+}
+skinparam participant<<SimpleStorageServiceS3>> {
+    BackgroundColor #FFFFFF
+    BorderColor #FF9900
+}
+sprite $Lambda [64x64/16z] {
+xPQ7QWGn44CrFV__m-bcPHy63-b5ARTDw1qZXhtxLlhNloecjVsAIT7t-vNkaBw_fhDuap-XVVzycc_o1xJlPmcoxNyBW2BhMQDF1D3fZzO0W7Nyhl8e1U82
+g8R_Tl3U0hXjNW7LzmS3UDVDWtyxW7K1t1S0QG4aa6y1KC2cvcKB8262cWPldJrY28TDpKj89xuA1D1SP0P_jHRQ0CFK1k3uKLe626WZVdmQlBL92Tcw01pF
+0ArDkdOc8Gs0qLawD4HZamPiEIG0Xnt6yzTL1X0HZOETGOVKF0S0-C7Eed5pywegu2VnkHuEvTRFcHpAntl_cYaBre6VSkYGkBP-pgIX4y21dp8DiPdBtf-0
+NwzjjGucNcKxluFaQo_vti6BQwrmoxtle7_zwm4
+}
+
+skinparam rectangle<<Lambda>> {
+    BackgroundColor #FFFFFF
+    BorderColor #FF9900
+}
+skinparam participant<<Lambda>> {
+    BackgroundColor #FFFFFF
+    BorderColor #FF9900
+}
+sprite $SQS [64x64/16z] {
+x5FN0Xin21DWbl__WrkSSNlrDLKs3aWwSVq7y9FuZtJJlx38VsWEPNp16i-wdQkhcRkRDW8WyO1R0BQSYo6WtRLX0FkcI22_rTu0soddL3-5W0-iEg0tsFdG
+Pz2b0gtsGmJWvxc1ukByD0M6Nzbhfyb9FqSIuivXQ2vED6vGs2IkBL8Cdf8x4U3JsYK3pNDyzOPPAYP7_PdBg01Y4KOX3lutmGMWcMj14nf3cimlkZ9eHu8L
+sqTd2VTgoeYiKL4s1hS0J83jRbQ-cBp69FWRIorDW_PwBsvR6XfrUoUOFLDgG7qjZ4dPdQ0zGJabDGCZttD2Y0YGRwa7n4SD5cZVaKVzRQS_Nlq-wp_MttVq
+zz9ln_e3iEp1PzVF1e-CR10x-PNiHNwvpO_tyYk44BZAv_kJMYp-O7_fP7_Fxv_Okt-KuyyepRyKbX-KbbyKbf-KbjyqgJyGoOP0_KLX_KbX_KrX-u72zWjb
+xIVwjTymsu_34uo2KG
+}
+
+skinparam rectangle<<SQS>> {
+    BackgroundColor #FFFFFF
+    BorderColor #FF9900
+}
+skinparam participant<<SQS>> {
+    BackgroundColor #FFFFFF
+    BorderColor #FF9900
+}
+
+left to right direction
+
+agent "Mackerel" as mackerel #fff
+
+rectangle "==Report Queue\n<color:#CC2264><$SQS></color>\n//<size:12>[check Reports]</size>//" <<SQS>> as reportQueue
+rectangle "==Mackerel config\n<color:#3F8624><$SimpleStorageServiceS3></color>\n//<size:12>[mackerel configfile]</size>//" <<SimpleStorageServiceS3>> as config
+rectangle "==sender\n<color:#D86613><$Lambda></color>\n//<size:12>[Post a report to mackerel]</size>//" <<Lambda>> as sender
+rectangle "==checks\n<color:#D86613><$Lambda></color>\n//<size:12>[check plugin 1]</size>//" <<Lambda>> as checks1
+rectangle "==checks\n<color:#D86613><$Lambda></color>\n//<size:12>[check plugin 2]</size>//" <<Lambda>> as checks2
+rectangle "==checks\n<color:#D86613><$Lambda></color>\n//<size:12>[check plugin 3]</size>//" <<Lambda>> as checks3
+rectangle "==invoker\n<color:#D86613><$Lambda></color>\n//<size:12>[plugin invoker]</size>//" <<Lambda>> as invoker
+
+config -> invoker : load config
+invoker - -> checks1 : "async invoke"
+invoker - -> checks2 : "async invoke"
+invoker - -> checks3 : "async invoke"
+checks1 - -> reportQueue : send report
+checks2 - -> reportQueue : send report
+checks3 - -> reportQueue : send report
+reportQueue <- - sender : poling
+sender -> mackerel
+@enduml
+
+PlantUML version 1.2019.12(Sun Nov 03 10:24:54 UTC 2019)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 1.8.0_232-heroku-b09
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>
