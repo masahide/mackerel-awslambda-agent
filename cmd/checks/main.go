@@ -11,11 +11,14 @@ import (
 	"github.com/masahide/mackerel-awslambda-agent/pkg/checkplugin"
 	"github.com/masahide/mackerel-awslambda-agent/pkg/config"
 	"github.com/masahide/mackerel-awslambda-agent/pkg/queue"
+	"golang.org/x/xerrors"
 )
 
 var (
+	// nolint:gochecknoglobals
 	sess *session.Session
-	q    *queue.Queue
+	// nolint:gochecknoglobals
+	q *queue.Queue
 )
 
 func main() {
@@ -34,19 +37,21 @@ func main() {
 }
 
 func handler(ctx context.Context, params config.CheckPluginParams) error {
-
 	check := checkplugin.NewCheckPlugin(sess, params)
 	report, err := check.Generate(ctx)
 	if err != nil {
 		log.Printf("check.Generate err:%v", err)
-		return err
+
+		return xerrors.Errorf("check.Generate err:%w", err)
 	}
 	if report == nil {
 		return nil
 	}
 	if err := q.PostCheckReport(ctx, report); err != nil {
 		log.Printf("PostCheckReport err:%v", err)
-		return err
+
+		return xerrors.Errorf("PostCheckReport err:%w", err)
 	}
+
 	return nil
 }

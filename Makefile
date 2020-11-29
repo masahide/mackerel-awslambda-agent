@@ -49,7 +49,7 @@ cover: test
 
 # Run all the linters
 lint:
-	./bin/golangci-lint run --tests=false --enable-all --disable=lll ./...
+	./bin/golangci-lint run --tests=false --enable-all --disable=lll,wsl ./...
 .PHONY: lint
 
 # Run all the tests and code checks

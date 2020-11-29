@@ -9,7 +9,6 @@ import (
 )
 
 func TestNewAgentConfig(t *testing.T) {
-
 	test := []struct {
 		envs []string
 		want Env
@@ -170,6 +169,7 @@ func TestGetCheckRules(t *testing.T) {
 		}
 	}
 }
+
 func TestLoadTables(t *testing.T) {
 	sess := session.Must(session.NewSession())
 	c := NewAgentConfig(sess)

@@ -1,6 +1,6 @@
 package config
 
-// Host mackerel check host info
+// Host mackerel check host info.
 type Host struct {
 	ID            string  `json:"id" default:"hostname"` // Primary key
 	Hostname      string  `json:"hostname"`

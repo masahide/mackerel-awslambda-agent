@@ -34,6 +34,7 @@ func (m *mockDynamodb) ScanPages(in *dynamodb.ScanInput, fn func(*dynamodb.ScanO
 	fn(&dynamodb.ScanOutput{Items: m.outputs}, true)
 	return nil
 }
+
 func (m *mockDynamodb) PutItem(in *dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error) {
 	m.outputs = append(m.outputs, in.Item)
 	return &dynamodb.PutItemOutput{}, nil
@@ -44,9 +45,10 @@ func (m *mockDynamodb) GetItem(in *dynamodb.GetItemInput) (*dynamodb.GetItemOutp
 		Item: map[string]*dynamodb.AttributeValue{
 			"id":       {S: aws.String("test1")},
 			"hostname": {S: aws.String("hostname1")},
-			"checks": {L: []*dynamodb.AttributeValue{
-				{M: map[string]*dynamodb.AttributeValue{"Name": {S: aws.String("check1")}, "Memo": {S: aws.String("fuga")}}},
-			},
+			"checks": {
+				L: []*dynamodb.AttributeValue{
+					{M: map[string]*dynamodb.AttributeValue{"Name": {S: aws.String("check1")}, "Memo": {S: aws.String("fuga")}}},
+				},
 			},
 		},
 	}, nil
@@ -57,6 +59,7 @@ type host struct {
 	Hostname string
 	Checks   []check
 }
+
 type check struct {
 	Name string
 	Memo string
@@ -143,6 +146,7 @@ func TestGet(t *testing.T) {
 		}
 	}
 }
+
 func TestPut(t *testing.T) {
 	m := mockDynamodb{}
 	d := &DynamoDB{DynamoDBAPI: &m}

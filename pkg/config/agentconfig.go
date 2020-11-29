@@ -7,9 +7,10 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	"github.com/masahide/mackerel-awslambda-agent/pkg/store"
 	"github.com/masahide/mackerel-awslambda-agent/pkg/store/dynamodbdriver"
+	"golang.org/x/xerrors"
 )
 
-// AgentConfig is agent config struct
+// AgentConfig is agent config struct.
 type AgentConfig struct {
 	Env
 	CheckRules     map[string]CheckRule
@@ -19,7 +20,7 @@ type AgentConfig struct {
 	stateStore     store.Store
 }
 
-// NewAgentConfig load config from env
+// NewAgentConfig load config from env.
 func NewAgentConfig(p client.ConfigProvider) *AgentConfig {
 	var env Env
 	err := envconfig.Process("", &env)
@@ -34,10 +35,11 @@ func NewAgentConfig(p client.ConfigProvider) *AgentConfig {
 		Hosts:          map[string]Host{},
 		Env:            env,
 	}
+
 	return a
 }
 
-// LoadTables load config from env
+// LoadTables load config from env.
 func (a *AgentConfig) LoadTables() error {
 	var err error
 	if a.Hosts, err = a.getHosts(); err != nil {
@@ -46,32 +48,34 @@ func (a *AgentConfig) LoadTables() error {
 	if a.CheckRules, err = a.getCheckRules(); err != nil {
 		return err
 	}
-	//a.CheckStates, err = a.getStates()
+	// a.CheckStates, err = a.getStates()
 	return err
 }
 
-// getHosts get check configs
+// getHosts get check configs.
 func (a *AgentConfig) getHosts() (map[string]Host, error) {
 	var hosts []Host
 	if err := a.hostsStore.ScanAll(&hosts); err != nil {
-		return nil, err
+		return nil, xerrors.Errorf("hostsStore.ScanAll err:%w", err)
 	}
 	res := make(map[string]Host, len(hosts))
 	for _, h := range hosts {
 		res[h.ID] = h
 	}
+
 	return res, nil
 }
 
 func (a *AgentConfig) getCheckRules() (map[string]CheckRule, error) {
 	var rules []CheckRule
 	if err := a.checkRuleStore.ScanAll(&rules); err != nil {
-		return nil, err
+		return nil, xerrors.Errorf("checkRuleStore.ScanAll err:%w", err)
 	}
 	res := make(map[string]CheckRule, len(rules))
 	for _, c := range rules {
 		res[c.Name] = c
 	}
+
 	return res, nil
 }
 

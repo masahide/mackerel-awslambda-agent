@@ -34,7 +34,7 @@ func TestGenerate(t *testing.T) {
 	}
 	sess := session.Must(session.NewSession())
 	for _, tt := range test {
-		//config.CheckPluginParams
+		// config.CheckPluginParams
 		c := NewCheckPlugin(sess, tt.params)
 		m := mockHostStore{
 			ps: tt.ps,

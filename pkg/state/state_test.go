@@ -18,6 +18,7 @@ func (m *mockDynamodb) ScanPages(in *dynamodb.ScanInput, fn func(*dynamodb.ScanO
 	fn(&dynamodb.ScanOutput{Items: m.outputs}, true)
 	return nil
 }
+
 func (m *mockDynamodb) PutItem(in *dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error) {
 	return &dynamodb.PutItemOutput{}, nil
 }
@@ -32,6 +33,7 @@ func (m *mockHostStore) Get(key string, out interface{}) error {
 	m.key = key
 	return nil
 }
+
 func (m *mockHostStore) Put(in interface{}) error {
 	var ok bool
 	if m.res, ok = in.(HostState); !ok {
@@ -111,6 +113,7 @@ func (m *mockCheckStore) Get(key string, out interface{}) error {
 	}
 	return nil
 }
+
 func (m *mockCheckStore) Put(in interface{}) error {
 	ps, ok := in.(*PluginState)
 	if !ok {

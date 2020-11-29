@@ -24,13 +24,14 @@ const (
 	tempDirPrefix = "mackerel"
 )
 
+// nolint:gochecknoglobals
 var exitCodeMap = map[int]mackerel.CheckStatus{
 	0: mackerel.CheckStatusOK,
 	1: mackerel.CheckStatusWarning,
 	2: mackerel.CheckStatusCritical,
 }
 
-// CheckPlugin struct
+// CheckPlugin struct.
 type CheckPlugin struct {
 	config.CheckPluginParams
 	config.Env
@@ -40,7 +41,7 @@ type CheckPlugin struct {
 	binPath string
 }
 
-// NewCheckPlugin Create Plugin struct
+// NewCheckPlugin Create Plugin struct.
 func NewCheckPlugin(p client.ConfigProvider, params config.CheckPluginParams) *CheckPlugin {
 	var env config.Env
 	err := envconfig.Process("", &env)
@@ -59,11 +60,13 @@ func NewCheckPlugin(p client.ConfigProvider, params config.CheckPluginParams) *C
 			Hostname: params.Host.Hostname,
 			Store:    dynamodbdriver.New(p, env.StateTable),
 		},
+		CheckState: &state.CheckState{},
 	}
+
 	return plugin
 }
 
-// Generate generates check report
+// Generate generates check report.
 func (c *CheckPlugin) Generate(ctx context.Context) (*mackerel.CheckReport, error) {
 	if err := c.loadCheckState(); err != nil {
 		return nil, xerrors.Errorf("initialize err:%w", err)
@@ -72,10 +75,11 @@ func (c *CheckPlugin) Generate(ctx context.Context) (*mackerel.CheckReport, erro
 	if err := c.saveCheckState(); err != nil {
 		return nil, xerrors.Errorf("saveCheckState err:%w", err)
 	}
+
 	return report, nil
 }
 
-// initialize is load config of CheckPlugin
+// initialize is load config of CheckPlugin.
 func (c *CheckPlugin) loadCheckState() error {
 	var err error
 	c.CheckState, err = c.GetCheckState(c.Rule.Name)
@@ -89,10 +93,11 @@ func (c *CheckPlugin) loadCheckState() error {
 	if err = statefile.PutStatefiles(c.tmpDir, c.StateFiles); err != nil {
 		return xerrors.Errorf("PutStatefiles err:%w", err)
 	}
+
 	return nil
 }
 
-// saveCheckState remove temp dir
+// saveCheckState remove temp dir.
 func (c *CheckPlugin) saveCheckState() error {
 	var err error
 	c.StateFiles, err = statefile.GetStatefiles(c.tmpDir)
@@ -103,8 +108,8 @@ func (c *CheckPlugin) saveCheckState() error {
 	if err != nil {
 		return xerrors.Errorf("PutCheckState err:%w", err)
 	}
-	return os.RemoveAll(c.tmpDir)
 
+	return os.RemoveAll(c.tmpDir)
 }
 
 func addPath(c cmdutil.Command, dir string) cmdutil.Command {
@@ -113,6 +118,7 @@ func addPath(c cmdutil.Command, dir string) cmdutil.Command {
 		return c
 	}
 	args[0] = filepath.Join(dir, args[0])
+
 	return cmdutil.CommandArgs(args)
 }
 
@@ -157,6 +163,7 @@ func (c *CheckPlugin) generate(ctx context.Context) *mackerel.CheckReport {
 		// do not report ok -> ok
 		return nil
 	}
+
 	return &newReport
 }
 
@@ -164,5 +171,6 @@ func exitCodeToStatus(exitCode int) mackerel.CheckStatus {
 	if code, ok := exitCodeMap[exitCode]; ok {
 		return code
 	}
+
 	return mackerel.CheckStatusUnknown
 }

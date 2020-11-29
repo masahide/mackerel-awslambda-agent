@@ -9,7 +9,7 @@ import (
 	"golang.org/x/xerrors"
 )
 
-// GetStatefiles get all data from state files
+// GetStatefiles get all data from state files.
 func GetStatefiles(dir string) ([]byte, error) {
 	data := map[string][]byte{}
 	err := filepath.Walk(dir,
@@ -29,15 +29,17 @@ func GetStatefiles(dir string) ([]byte, error) {
 				return xerrors.Errorf("ioutil.ReadFile err path:%s err:%w", path, err)
 			}
 			data[relPath] = b
+
 			return nil
 		})
 	if err != nil {
-		return nil, err
+		return nil, xerrors.Errorf("filepath.Walk err:%w", err)
 	}
+
 	return json.Marshal(data)
 }
 
-// PutStatefiles put all data to state files
+// PutStatefiles put all data to state files.
 func PutStatefiles(baseDir string, jsonBlob []byte) error {
 	var data map[string][]byte
 	if err := json.Unmarshal(jsonBlob, &data); err != nil {
@@ -49,9 +51,10 @@ func PutStatefiles(baseDir string, jsonBlob []byte) error {
 			return xerrors.Errorf("os.MkdirAll err:%w", err)
 		}
 		fullPath := filepath.Join(baseDir, relPath)
-		if err := ioutil.WriteFile(fullPath, body, 0644); err != nil {
+		if err := ioutil.WriteFile(fullPath, body, 0600); err != nil {
 			return xerrors.Errorf("ioutil.WriteFile path:%s err:%w", fullPath, err)
 		}
 	}
+
 	return nil
 }

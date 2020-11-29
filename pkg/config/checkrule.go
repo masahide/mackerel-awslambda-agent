@@ -2,7 +2,7 @@ package config
 
 import "time"
 
-// CheckRule rule of check Plugin
+// CheckRule rule of check Plugin.
 type CheckRule struct {
 	Name                  string        `json:"name"` // Primary key
 	PluginType            string        `json:"pluginType"`
