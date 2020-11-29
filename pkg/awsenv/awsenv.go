@@ -66,9 +66,12 @@ func EnvToCredentialFile(profile, home string) error {
 		}
 	*/
 	cred := getAWSEnvs()
+	if len(cred.AccessKey) == 0 {
+		return nil
+	}
+	os.Mkdir(filepath.Join(home, ".aws"), 0755)
 	creds := readCreds(home)
 	creds[profile] = cred
-	os.Mkdir(filepath.Join(home, ".aws"), 0755)
 	if err := putCredsFile(home, creds); err != nil {
 		return err
 	}

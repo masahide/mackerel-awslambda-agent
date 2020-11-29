@@ -32,3 +32,4 @@ snap.login
 .dist/
 .*.yaml
 .*.yml
+pkg/mock

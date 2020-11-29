@@ -2,8 +2,8 @@
 
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 
+${DIST:="$SCRIPT_DIR/../.dist/checks"}
 WORKDIR="$TMPDIR$(date +%s)"
-DIST="$SCRIPT_DIR/../.dist"
 
 set -x
 URL="https://github.com/mackerelio-labs/check-aws-cloudwatch-logs-insights/releases/download/v0.0.2/check-aws-cloudwatch-logs-insights_linux_amd64.zip"
@@ -16,7 +16,7 @@ curl -Ls \
     "$URL"
 unzip "$WORKDIR/plugin.zip" -d "$WORKDIR" 
 
-mkdir -p $DIST
+[[ -d $DIST ]] || mkdir -p $DIST
 mv "$WORKDIR/$FILE"*/"$FILE" $DIST/
 rm -rf "$WORKDIR"
 

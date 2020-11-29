@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/client"
@@ -35,7 +36,8 @@ type CheckPlugin struct {
 	config.Env
 	*state.Manager
 	*state.CheckState
-	tmpDir string
+	tmpDir  string
+	binPath string
 }
 
 // NewCheckPlugin Create Plugin struct
@@ -44,6 +46,9 @@ func NewCheckPlugin(p client.ConfigProvider, params config.CheckPluginParams) *C
 	err := envconfig.Process("", &env)
 	if err != nil {
 		log.Fatal(err.Error())
+	}
+	if dir := os.Getenv("LAMBDA_TASK_ROOT"); len(dir) > 0 {
+		params.Rule.Env = append(params.Rule.Env, fmt.Sprintf("PATH=%s:%s", dir, os.Getenv("PATH")))
 	}
 	plugin := &CheckPlugin{
 		CheckPluginParams: params,
@@ -60,19 +65,18 @@ func NewCheckPlugin(p client.ConfigProvider, params config.CheckPluginParams) *C
 
 // Generate generates check report
 func (c *CheckPlugin) Generate(ctx context.Context) (*mackerel.CheckReport, error) {
-	if err := c.initialize(); err != nil {
+	if err := c.loadCheckState(); err != nil {
 		return nil, xerrors.Errorf("initialize err:%w", err)
 	}
-	defer func() {
-		if err := c.finalize(); err != nil {
-			log.Printf("finalize err:%s", err)
-		}
-	}()
-	return c.generate(ctx)
+	report := c.generate(ctx)
+	if err := c.saveCheckState(); err != nil {
+		return nil, xerrors.Errorf("saveCheckState err:%w", err)
+	}
+	return report, nil
 }
 
 // initialize is load config of CheckPlugin
-func (c *CheckPlugin) initialize() error {
+func (c *CheckPlugin) loadCheckState() error {
 	var err error
 	c.CheckState, err = c.GetCheckState(c.Rule.Name)
 	if err != nil {
@@ -88,8 +92,8 @@ func (c *CheckPlugin) initialize() error {
 	return nil
 }
 
-// finalize remove temp dir
-func (c *CheckPlugin) finalize() error {
+// saveCheckState remove temp dir
+func (c *CheckPlugin) saveCheckState() error {
 	var err error
 	c.StateFiles, err = statefile.GetStatefiles(c.tmpDir)
 	if err != nil {
@@ -103,8 +107,18 @@ func (c *CheckPlugin) finalize() error {
 
 }
 
-func (c *CheckPlugin) generate(ctx context.Context) (*mackerel.CheckReport, error) {
+func addPath(c cmdutil.Command, dir string) cmdutil.Command {
+	args := c.ToArgs()
+	if args[0] == "/bin/sh" {
+		return c
+	}
+	args[0] = filepath.Join(dir, args[0])
+	return cmdutil.CommandArgs(args)
+}
+
+func (c *CheckPlugin) generate(ctx context.Context) *mackerel.CheckReport {
 	cmd := cmdutil.CommandString(c.Rule.Command)
+	cmd = addPath(cmd, c.binPath)
 	now := time.Now()
 	envs := append(c.Rule.Env, fmt.Sprintf("MACKEREL_PLUGIN_WORKDIR=%s", c.tmpDir))
 	stdout, stderr, exitCode, err := cmdutil.RunCommand(ctx, cmd, "", envs, c.Rule.Timeout)
@@ -137,13 +151,13 @@ func (c *CheckPlugin) generate(ctx context.Context) (*mackerel.CheckReport, erro
 	LatestReport := c.LatestReport
 	c.LatestReport = &newReport
 	if LatestReport == nil {
-		return &newReport, nil
+		return &newReport
 	}
 	if LatestReport.Status == mackerel.CheckStatusOK && newReport.Status == mackerel.CheckStatusOK {
 		// do not report ok -> ok
-		return nil, nil
+		return nil
 	}
-	return &newReport, nil
+	return &newReport
 }
 
 func exitCodeToStatus(exitCode int) mackerel.CheckStatus {
