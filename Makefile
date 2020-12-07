@@ -3,10 +3,10 @@ export AWS_DEFAULT_REGION ?= ap-northeast-1
 NAME:= $(notdir $(PWD))
 
 DIST=.dist
-CHECKS_BIN=$(DIST)/checks/checks
+CHECKER_BIN=$(DIST)/checker/checker
 INVOKER_BIN=$(DIST)/invoker/invoker
 SENDER_BIN=$(DIST)/sender/sender
-BINS=$(CHECKS_BIN) $(INVOKER_BIN) $(SENDER_BIN)
+BINS=$(CHECKER_BIN) $(INVOKER_BIN) $(SENDER_BIN)
 TEST_OPTIONS?=
 PKG?= $(wildcard pkg/*)
 ENV  := dev
@@ -15,7 +15,7 @@ CF_STACKNAME := $(ENV)-$(NAME)
 CF_FILE      := template.yml
 IAM_CF_FILE  := iam-template.yml
 
-PLUGIN_DIST := $(dir $(CHECKS_BIN))
+PLUGIN_DIST := $(dir $(CHECKER_BIN))
 PLUGIN_FILES := $(PLUGIN_DIST)/check-aws-cloudwatch-logs-insights
 
 export GO111MODULE := on
@@ -52,7 +52,7 @@ lint:
 	./bin/golangci-lint run --tests=false --enable-all --disable=lll,wsl ./...
 .PHONY: lint
 
-# Run all the tests and code checks
+# Run all the tests and code checker
 ci: build test lint
 .PHONY: ci
 
@@ -61,7 +61,7 @@ build: clean $(BINS) extract-plugins
 .PHONY: build
 
 clean:
-	rm -rf $(DIST)
+	rm -rf $(BINS)
 	rm -f coverage.txt *coverage.txt
 .PHONY: clean
 
@@ -69,7 +69,7 @@ $(INVOKER_BIN):
 	GOOS=linux GOARCH=amd64 go build -o $@ cmd/$(notdir $@)/main.go
 $(SENDER_BIN):
 	GOOS=linux GOARCH=amd64 go build -o $@ cmd/$(notdir $@)/main.go
-$(CHECKS_BIN):
+$(CHECKER_BIN):
 	GOOS=linux GOARCH=amd64 go build -o $@ cmd/$(notdir $@)/main.go
 
 .DEFAULT_GOAL := build

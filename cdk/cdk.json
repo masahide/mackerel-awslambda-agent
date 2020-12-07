@@ -11,13 +11,19 @@
         "dev": {
             "environment" : {
                 "DRYRUN":    "false",
-                "CLI":       "false"
+                "CLI":       "false",
+                "HOSTNAME":  "mackerel-awslambda-agent",
+                "S3KEY":     "config/agent.conf",
+                "ORGANIZATION": "test"
             }
         },
         "prd": {
             "environment" : {
                 "DRYRUN":    "false",
-                "CLI":       "false"
+                "CLI":       "false",
+                "HOSTNAME":  "mackerel-awslambda-agent",
+                "S3KEY":     "config/agent.conf",
+                "ORGANIZATION": "test"
             }
         }
     }

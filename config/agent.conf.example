@@ -1,0 +1,4 @@
+apikey = "APIKEY"
+
+[plugin.checks.cloudwatch-logs]
+command = "check-aws-cloudwatch-logs-insights --log-group-name=/aws/lambda/xxxxxxxxx --filter='filter @message like /ERROR/'"

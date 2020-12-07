@@ -2,35 +2,52 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"os"
-	"path"
-	"time"
 
-	"github.com/aws/aws-lambda-go/events"
 	lambdaevent "github.com/aws/aws-lambda-go/lambda"
-	"github.com/mackerelio/mackerel-container-agent/cmdutil"
-	"github.com/mackerelio/mackerel-container-agent/config"
-	"golang.org/x/xerrors"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/kelseyhightower/envconfig"
+	"github.com/masahide/mackerel-awslambda-agent/pkg/config"
+	"github.com/masahide/mackerel-awslambda-agent/pkg/invoker"
+	"github.com/masahide/mackerel-awslambda-agent/pkg/store/dynamodbdriver"
+)
+
+var (
+	agent *config.AgentConfig
+	sess  *session.Session
+	env   config.Env
+	iv    *invoker.Invoker
 )
 
 func main() {
+	log.SetFlags(log.Lshortfile | log.LstdFlags)
+	err := envconfig.Process("", &env)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	sess = session.Must(session.NewSession())
+	s := dynamodbdriver.New(sess, env.StateTable)
+	agent, err = config.NewAgentConfig(s, sess)
+	if err != nil {
+		log.Fatal(err)
+	}
+	iv = invoker.New(sess, env)
 	lambdaevent.Start(handler)
 }
 
 // Handler aws lambda handler.
-func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
-	env := config.Env([]string{})
-	dir := os.Getenv("LAMBDA_TASK_ROOT")
-	cmd := cmdutil.CommandString(fmt.Sprintf("%s -h", path.Join(dir, "check-aws-cloudwatch-logs")))
-	// cmd := cmdutil.CommandString(fmt.Sprintf("set -x;pwd;ls -la %s", dir))
-	stdout, stderr, exitCode, err := cmdutil.RunCommand(ctx, cmd, "", env, time.Minute)
-
-	log.Printf("cmd:%s\nstdout:%s\n,stderr:%s\n,exitCode:%d\n,err:%s", cmd, stdout, stderr, exitCode, err)
-	if err != nil {
-		return xerrors.Errorf("RunCommand err:%w", err)
+func handler(ctx context.Context, event config.Env) error {
+	if err := agent.LoadAgentConfig(sess, env.S3Bucket, env.S3Key); err != nil {
+		log.Printf("agent.LoadAgentConfig err: %+v", err)
+		return err
 	}
-
+	if err := agent.GetHost(); err != nil {
+		log.Printf("agent.GetHost err: %+v", err)
+		return err
+	}
+	if err := iv.Run(agent); err != nil {
+		log.Printf("invoker Run err: %+v", err)
+		return err
+	}
 	return nil
 }

@@ -33,3 +33,4 @@ snap.login
 .*.yaml
 .*.yml
 pkg/mock
+config/agent.conf

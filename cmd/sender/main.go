@@ -2,35 +2,38 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"os"
-	"path"
-	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	lambdaevent "github.com/aws/aws-lambda-go/lambda"
-	"github.com/mackerelio/mackerel-container-agent/cmdutil"
-	"github.com/mackerelio/mackerel-container-agent/config"
-	"golang.org/x/xerrors"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/kelseyhightower/envconfig"
+	"github.com/masahide/mackerel-awslambda-agent/pkg/config"
+	"github.com/masahide/mackerel-awslambda-agent/pkg/sender"
+)
+
+var (
+	s *sender.Sender
 )
 
 func main() {
+	var env config.Env
+	var sess *session.Session
+	log.SetFlags(log.Lshortfile | log.LstdFlags)
+	err := envconfig.Process("", &env)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	sess = session.Must(session.NewSession())
+	conf, err := config.LoadS3Config(sess, env.S3Bucket, env.S3Key)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	s = sender.New(conf.Apikey)
 	lambdaevent.Start(handler)
 }
 
 // Handler aws lambda handler.
 func handler(ctx context.Context, sqsEvent events.SQSEvent) error {
-	env := config.Env([]string{})
-	dir := os.Getenv("LAMBDA_TASK_ROOT")
-	cmd := cmdutil.CommandString(fmt.Sprintf("%s -h", path.Join(dir, "check-aws-cloudwatch-logs")))
-	// cmd := cmdutil.CommandString(fmt.Sprintf("set -x;pwd;ls -la %s", dir))
-	stdout, stderr, exitCode, err := cmdutil.RunCommand(ctx, cmd, "", env, time.Minute)
-
-	log.Printf("cmd:%s\nstdout:%s\n,stderr:%s\n,exitCode:%d\n,err:%s", cmd, stdout, stderr, exitCode, err)
-	if err != nil {
-		return xerrors.Errorf("RunCommand err:%w", err)
-	}
-
-	return nil
+	return s.Run(sqsEvent)
 }

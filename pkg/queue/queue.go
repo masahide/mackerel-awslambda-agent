@@ -14,7 +14,7 @@ import (
 )
 
 type sqsParams struct {
-	CheckReportQueueARN string
+	QueueURL string
 }
 
 type Queue struct {
@@ -28,7 +28,7 @@ func New(sess client.ConfigProvider) (*Queue, error) {
 		svc: sqs.New(sess),
 	}
 	if err := envconfig.Process("", &q.envs); err != nil {
-		return nil, xerrors.Errorf("envconfig.Process err:%w", err)
+		return nil, xerrors.Errorf("envconfig.Process err: %w", err)
 	}
 
 	return &q, nil
@@ -38,15 +38,15 @@ func New(sess client.ConfigProvider) (*Queue, error) {
 func (q *Queue) PostCheckReport(ctx context.Context, report *mackerel.CheckReport) error {
 	data, err := json.Marshal(report)
 	if err != nil {
-		return xerrors.Errorf("json.Marshal err:%s", err)
+		return xerrors.Errorf("json.Marshal err: %w", err)
 	}
 	// nolint:exhaustivestruct
 	_, err = q.svc.SendMessageWithContext(ctx, &sqs.SendMessageInput{
-		QueueUrl:    &q.envs.CheckReportQueueARN,
+		QueueUrl:    &q.envs.QueueURL,
 		MessageBody: aws.String(string(data)),
 	})
 	if err != nil {
-		return xerrors.Errorf("SendMessageWithContext err:%w", err)
+		return xerrors.Errorf("SendMessageWithContext ARN:%s err: %w", q.envs.QueueURL, err)
 	}
 
 	return nil

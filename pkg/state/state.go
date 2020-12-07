@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"time"
 
-	mackerel "github.com/mackerelio/mackerel-client-go"
 	"github.com/masahide/mackerel-awslambda-agent/pkg/store"
 	"golang.org/x/xerrors"
 )
@@ -15,14 +14,16 @@ const (
 
 // CheckState is check plugin state.
 type CheckState struct {
-	ID           string
-	StateFiles   []byte                // `json:"stateFiles,omitempty"` // JSON data
-	LatestReport *mackerel.CheckReport // `json:"latestReport,omitempty"`
+	ID           string `json:"id"`
+	StateFiles   []byte `json:"stateFiles,omitempty"` // JSON data
+	LatestStatus string `json:"latestReport,omitempty"`
 }
 
 // HostState is dynamodb table of hostID.
 type HostState struct {
-	ID           string `json:"id"` // Primary key (HostID:hostname
+	ID           string `json:"id"` // Primary key ( m.Org + "-" + m.Hostname
+	Organization string `json:"organization"`
+	Hostname     string `json:"hostname"`
 	HostID       string `json:"hostId" dynamodbav:",omitempty"`
 	HostCheckSum string `json:"hostCheckSum" dynamodbav:",omitempty"`
 }
@@ -55,7 +56,7 @@ func (m *Manager) ttl() int64 {
 func (m *Manager) GetCheckState(name string) (*CheckState, error) {
 	ps, err := m.GetPluginState(name)
 	if err != nil {
-		return nil, xerrors.Errorf("GetPluginState err:%w", err)
+		return nil, xerrors.Errorf("GetPluginState err: %w", err)
 	}
 
 	return decodeCheckState(ps)
@@ -65,7 +66,7 @@ func decodeCheckState(in *PluginState) (*CheckState, error) {
 	var res CheckState
 	err := json.Unmarshal(in.State, &res)
 	if err != nil {
-		return nil, xerrors.Errorf("json.Unmarshal data:[%s] err:%w", in.State, err)
+		return nil, xerrors.Errorf("decodeCheckState json.Unmarshal data:[%s] err: %w", in.State, err)
 	}
 	if len(res.StateFiles) == 0 {
 		res.StateFiles = []byte("{}")
@@ -87,7 +88,7 @@ func (m *Manager) PutCheckState(name string, in *CheckState) error {
 func encodeCheckState(in *CheckState, ttl int64) (*PluginState, error) {
 	b, err := json.Marshal(in)
 	if err != nil {
-		return nil, xerrors.Errorf("json.Marshal err:%w", err)
+		return nil, xerrors.Errorf("json.Marshal err: %w", err)
 	}
 
 	return &PluginState{
@@ -102,7 +103,7 @@ func (m *Manager) GetHostState() (*HostState, error) {
 	id := m.Org + "-" + m.Hostname
 	res := &HostState{}
 	if err := m.Get(id, res); err != nil {
-		return nil, xerrors.Errorf("m.Get err:%w", err)
+		return nil, xerrors.Errorf("m.Get err: %w", err)
 	}
 
 	return res, nil
@@ -120,7 +121,7 @@ func (m *Manager) GetPluginState(name string) (*PluginState, error) {
 	id := m.Org + "-" + m.Hostname + "-" + name
 	res := &PluginState{}
 	if err := m.Get(id, res); err != nil {
-		return nil, xerrors.Errorf("m.Get err:%w", err)
+		return nil, xerrors.Errorf("m.Get err: %w", err)
 	}
 	if len(res.ID) == 0 {
 		res.ID = m.Org + "-" + m.Hostname + "-" + name

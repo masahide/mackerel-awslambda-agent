@@ -35,7 +35,7 @@ func (d *DynamoDB) ScanAll(out interface{}) error {
 		},
 	)
 	if err != nil {
-		return xerrors.Errorf("d.ScanPages err:%w", err)
+		return xerrors.Errorf("d.ScanPages err: %w", err)
 	}
 
 	return dynamodbattribute.UnmarshalListOfMaps(data, &out)
@@ -45,12 +45,12 @@ func (d *DynamoDB) ScanAll(out interface{}) error {
 func (d *DynamoDB) Get(key string, out interface{}) error {
 	// nolint:exhaustivestruct
 	input := &dynamodb.GetItemInput{
-		Key:       map[string]*dynamodb.AttributeValue{"ID": {S: &key}},
+		Key:       map[string]*dynamodb.AttributeValue{"id": {S: &key}},
 		TableName: &d.TableName,
 	}
 	result, err := d.GetItem(input)
 	if err != nil {
-		return xerrors.Errorf("Dynamodb GetItem table=%s,key=%s err:%w", d.TableName, key, err)
+		return xerrors.Errorf("Dynamodb GetItem table=%s,key=%s err: %w", d.TableName, key, err)
 	}
 
 	return dynamodbattribute.UnmarshalMap(result.Item, out)
@@ -60,11 +60,14 @@ func (d *DynamoDB) Get(key string, out interface{}) error {
 func (d *DynamoDB) Put(in interface{}) error {
 	attr, err := dynamodbattribute.MarshalMap(in)
 	if err != nil {
-		return xerrors.Errorf("MarshalMap err:%w", err)
+		return xerrors.Errorf("MarshalMap err: %w", err)
 	}
 	// nolint:exhaustivestruct
-	if _, err = d.PutItem(&dynamodb.PutItemInput{Item: attr}); err != nil {
-		return xerrors.Errorf("PutItem err:%w", err)
+	if _, err = d.PutItem(&dynamodb.PutItemInput{
+		Item:      attr,
+		TableName: &d.TableName,
+	}); err != nil {
+		return xerrors.Errorf("PutItem err: %w", err)
 	}
 
 	return nil

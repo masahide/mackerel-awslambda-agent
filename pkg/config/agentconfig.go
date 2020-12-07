@@ -1,120 +1,176 @@
 package config
 
 import (
+	"crypto/md5"
+	"encoding/hex"
+	"encoding/json"
 	"log"
+	"strings"
+	"time"
+	"unicode/utf8"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/client"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/kelseyhightower/envconfig"
+	mkconf "github.com/mackerelio/mackerel-agent/config"
+	"github.com/mackerelio/mackerel-client-go"
+	"github.com/masahide/mackerel-awslambda-agent/pkg/state"
 	"github.com/masahide/mackerel-awslambda-agent/pkg/store"
 	"github.com/masahide/mackerel-awslambda-agent/pkg/store/dynamodbdriver"
+	"github.com/pelletier/go-toml"
 	"golang.org/x/xerrors"
 )
 
 // AgentConfig is agent config struct.
 type AgentConfig struct {
+	*state.HostState
 	Env
-	CheckRules     map[string]CheckRule
-	Hosts          map[string]Host
-	hostsStore     store.Store
-	checkRuleStore store.Store
-	stateStore     store.Store
+	CheckRules map[string]CheckRule
+	*state.Manager
+	hostStore  store.Store
+	stateStore store.Store
+	APIKey     string
 }
 
 // NewAgentConfig load config from env.
-func NewAgentConfig(p client.ConfigProvider) *AgentConfig {
+func NewAgentConfig(s store.Store, p client.ConfigProvider) (*AgentConfig, error) {
 	var env Env
 	err := envconfig.Process("", &env)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 	a := &AgentConfig{
-		hostsStore:     dynamodbdriver.New(p, env.HostsTable),
-		checkRuleStore: dynamodbdriver.New(p, env.CheckRulesTable),
-		stateStore:     dynamodbdriver.New(p, env.StateTable),
-		CheckRules:     map[string]CheckRule{},
-		Hosts:          map[string]Host{},
-		Env:            env,
+		stateStore: dynamodbdriver.New(p, env.StateTable),
+		hostStore:  dynamodbdriver.New(p, env.StateTable),
+		CheckRules: map[string]CheckRule{},
+		Env:        env,
+		Manager: &state.Manager{
+			TTLDays:  env.StateTTLDays,
+			Org:      env.Organization,
+			Hostname: env.Hostname,
+			Store:    s,
+		},
 	}
-
-	return a
+	return a, nil
 }
 
-// LoadTables load config from env.
-func (a *AgentConfig) LoadTables() error {
-	var err error
-	if a.Hosts, err = a.getHosts(); err != nil {
-		return err
-	}
-	if a.CheckRules, err = a.getCheckRules(); err != nil {
-		return err
-	}
-	// a.CheckStates, err = a.getStates()
-	return err
-}
-
-// getHosts get check configs.
-func (a *AgentConfig) getHosts() (map[string]Host, error) {
-	var hosts []Host
-	if err := a.hostsStore.ScanAll(&hosts); err != nil {
-		return nil, xerrors.Errorf("hostsStore.ScanAll err:%w", err)
-	}
-	res := make(map[string]Host, len(hosts))
-	for _, h := range hosts {
-		res[h.ID] = h
-	}
-
-	return res, nil
-}
-
-func (a *AgentConfig) getCheckRules() (map[string]CheckRule, error) {
-	var rules []CheckRule
-	if err := a.checkRuleStore.ScanAll(&rules); err != nil {
-		return nil, xerrors.Errorf("checkRuleStore.ScanAll err:%w", err)
-	}
-	res := make(map[string]CheckRule, len(rules))
-	for _, c := range rules {
-		res[c.Name] = c
-	}
-
-	return res, nil
-}
-
-/*
-func (a *AgentConfig) getStates() (map[string]state.CheckState, error) {
-		var states []state.CheckState
-
-		err := a.ScanPages(
-			&dynamodb.ScanInput{TableName: &a.StateTable},
-			func(page *dynamodb.ScanOutput, lastPage bool) bool {
-				c := make([]state.CheckState, len(page.Items))
-				if unmarshalErr = dynamodbattribute.UnmarshalListOfMaps(page.Items, &c); unmarshalErr != nil {
-					return falsecheckRuleStore
-				}
-				states = append(states, c...)
-				return true
-			},
-		)
-		if unmarshalErr != nil {
-			return nil, unmarshalErr
-		}
-		if err != nil {
-			return nil, err
-		}
-		res := make(map[string]state.CheckState, len(states))
-		for _, c := range states {
-			res[c.ID] = c
-		}
-		return res, nil
-	return nil, nil
-}
-
-// PutState put state.CheckState
-func (a *AgentConfig) PutState(in state.CheckState) error {
-	attr, err := dynamodbattribute.MarshalMap(in)
+func (a *AgentConfig) getCheckSum(param interface{}) string {
+	data := []byte{}
+	data, err := json.Marshal(param)
 	if err != nil {
-        return xerrors.Errorf("MarshalMap err:%w", err)
+		log.Printf("hosthash json.Marshal err:%s", err)
+		return ""
 	}
-	_, err = a.PutItem(&dynamodb.PutItemInput{Item: attr})
-	return err
+	h := md5.Sum(data)
+	return hex.EncodeToString(h[:])
+
 }
-*/
+
+func (a *AgentConfig) GetHost() error {
+	if a.HostState == nil {
+		var err error
+		a.HostState, err = a.GetHostState()
+		if err != nil {
+			return xerrors.Errorf("GetHostState err: %w", err)
+		}
+	}
+	client := mackerel.NewClient(a.APIKey)
+	checks := make([]mackerel.CheckConfig, 0, len(a.CheckRules))
+	for _, rule := range a.CheckRules {
+		checks = append(checks, mackerel.CheckConfig{Name: rule.Name, Memo: rule.Memo})
+	}
+	a.HostState.Hostname = a.Env.Hostname
+	a.HostState.Organization = a.Env.Organization
+	param := mackerel.CreateHostParam{
+		Name:   a.Env.Hostname,
+		Checks: checks,
+	}
+	if len(a.HostState.HostID) == 0 {
+		id, err := client.CreateHost(&param)
+		if err != nil {
+			return xerrors.Errorf("mackerel CreateHost err: %w", err)
+		}
+		a.HostState.HostID = id
+		//a.Host.ID = a.HostState.HostID
+	}
+	checkSum := a.getCheckSum(param)
+	if checkSum == a.HostState.HostCheckSum {
+		return nil
+	}
+	a.HostState.HostCheckSum = checkSum
+	if err := a.PutHostState(*a.HostState); err != nil {
+		return xerrors.Errorf("PutHostState err: %w", err)
+	}
+	return nil
+}
+
+func LoadS3Config(p client.ConfigProvider, s3Bucket, s3Key string) (*mkconf.Config, error) {
+	svc := s3.New(p)
+	res, err := svc.GetObject(&s3.GetObjectInput{
+		Bucket: &s3Bucket,
+		Key:    &s3Key,
+	})
+	if err != nil {
+		return nil, xerrors.Errorf("s3 GetObject bucket:%s key:%s err: %w", s3Bucket, s3Key, err)
+	}
+	defer res.Body.Close()
+	conf := mkconf.Config{}
+	err = toml.NewDecoder(res.Body).Decode(&conf)
+	if err != nil {
+		return nil, xerrors.Errorf("config toml decode err: %w", err)
+	}
+	return &conf, nil
+}
+
+func int32Value(v *int32) uint {
+	if v == nil {
+		return 0
+	}
+	return uint(*v)
+}
+
+func (a *AgentConfig) LoadAgentConfig(p client.ConfigProvider, s3Bucket, s3Key string) error {
+	conf, err := LoadS3Config(p, s3Bucket, s3Key)
+	if err != nil {
+		return xerrors.Errorf("loadS3Config err: %w", err)
+	}
+	a.APIKey = conf.Apikey
+	checkRules := map[string]CheckRule{}
+	if pconfs, ok := conf.Plugin["checks"]; ok {
+		//a.Host.Checks = make([]Check, 0, len(pconfs))
+		for name, pconf := range pconfs {
+			envs, err := pconf.Env.ConvertToStrings()
+			if err != nil {
+				envs = []string{}
+			}
+			rule := CheckRule{
+				Name:                  name,
+				Env:                   envs,
+				Timeout:               time.Duration(pconf.TimeoutSeconds) * time.Second,
+				CustomIdentifier:      aws.StringValue(pconf.CustomIdentifier),
+				NotificationInterval:  int32Value(pconf.NotificationInterval.Minutes()),
+				CheckInterval:         int(int32Value(pconf.CheckInterval.Minutes())),
+				MaxCheckAttempts:      int32Value(pconf.MaxCheckAttempts),
+				PreventAlertAutoClose: pconf.PreventAlertAutoClose,
+			}
+			switch v := pconf.CommandConfig.Raw.(type) {
+			case string:
+				rule.Command = v
+			case []string:
+				rule.Command = strings.Join(v, " ")
+			default:
+				log.Printf("unkown command type rule:% value:%v", name, v)
+			}
+			if utf8.RuneCountInString(pconf.Memo) > 250 {
+				log.Printf("plugin.checks.%s.memo' size exceeds 250 characters", name)
+			}
+			rule.Memo = pconf.Memo
+
+			checkRules[name] = rule
+			//a.Host.Checks = append(a.Host.Checks, Check{Name: name, Memo: pconf.Memo})
+		}
+	}
+	a.CheckRules = checkRules
+	return nil
+}

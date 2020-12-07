@@ -11,7 +11,8 @@ type CheckRule struct {
 	Timeout               time.Duration `json:"timeout"`
 	PreventAlertAutoClose bool          `json:"preventAlertAutoClose"`
 	CheckInterval         int           `json:"checkInterval"`
-	Action                string        `json:"action"`
+	Memo                  string        `json:"memo"`
+	CustomIdentifier      string        `json:"customIdentifier"`
 	NotificationInterval  uint          `json:"notificationInterval"` // <- Post report
 	MaxCheckAttempts      uint          `json:"maxCheckAttempts"`     // <- Post report
 }

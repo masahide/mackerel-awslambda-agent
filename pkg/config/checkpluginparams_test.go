@@ -21,9 +21,9 @@ func TestJSONMarshal(t *testing.T) {
 			Timeout:               1 * time.Second,
 			PreventAlertAutoClose: false,
 			CheckInterval:         1,
-			Action:                "action",
-			NotificationInterval:  1,
-			MaxCheckAttempts:      1,
+			//Action:                "action",
+			NotificationInterval: 1,
+			MaxCheckAttempts:     1,
 		},
 		Host:  Host{},
 		State: state.HostState{},
@@ -32,7 +32,8 @@ func TestJSONMarshal(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	want := []byte(`{"org":"org","name":"name","rule":{"name":"ruleName","pluginType":"type","command":"command option1 op2","env":["aaa","bbbb"],"timeout":1000000000,"preventAlertAutoClose":false,"checkInterval":1,"action":"action","notificationInterval":1,"maxCheckAttempts":1},"host":{"id":"","hostname":"","sourceType":"","targetRegion":"","assumeRoleArn":"","checks":null},"state":{"id":"","hostId":"","hostCheckSum":""}}`)
+	//want := []byte(`{"org":"org","name":"name","rule":{"name":"ruleName","pluginType":"type","command":"command option1 op2","env":["aaa","bbbb"],"timeout":1000000000,"preventAlertAutoClose":false,"checkInterval":1,"action":"action","notificationInterval":1,"maxCheckAttempts":1},"host":{"id":"","hostname":"","sourceType":"","targetRegion":"","assumeRoleArn":"","checks":null},"state":{"id":"","hostId":"","hostCheckSum":""}}`)
+	want := []byte(`{"org":"org","name":"name","rule":{"name":"ruleName","pluginType":"type","command":"command option1 op2","env":["aaa","bbbb"],"timeout":1000000000,"preventAlertAutoClose":false,"checkInterval":1,"memo":"","customIdentifier":"","notificationInterval":1,"maxCheckAttempts":1},"host":{"id":"","hostname":"","sourceType":"","targetRegion":"","assumeRoleArn":"","checks":null},"state":{"id":"","hostId":"","hostCheckSum":""}}`)
 	if bytes.Compare(b, want) != 0 {
 		t.Errorf("%s, want:%s", b, want)
 	}

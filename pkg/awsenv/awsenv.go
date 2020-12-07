@@ -1,87 +1,89 @@
 package awsenv
 
 import (
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 
-	"github.com/pelletier/go-toml"
+	"github.com/go-ini/ini"
 	"golang.org/x/xerrors"
 )
 
+const (
+	awsAccessKeyID     = "aws_access_key_id"
+	awsSecretAccessKey = "aws_secret_access_key"
+	awsSessionToken    = "aws_session_token"
+
+	envAwsAccessKeyID     = "AWS_ACCESS_KEY_ID"
+	envAwsSecretAccessKey = "AWS_SECRET_ACCESS_KEY"
+	envAwsSessionToken    = "AWS_SESSION_TOKEN"
+
+	envAwsAccessKey     = "AWS_ACCESS_KEY"
+	envAwsSecretKey     = "AWS_SECRET_KEY"
+	envAwsSecurityToken = "AWS_SECURITY_TOKEN"
+)
+
 type Credential struct {
-	AccessKey       string `json:"aws_access_key_id" toml:"aws_access_key_id"`
-	SecretAccessKey string `json:"aws_secret_access_key" toml:"aws_secret_access_key"`
-	SessionToken    string `json:"aws_session_token" toml:"aws_session_token"`
+	AccessKey       string
+	SecretAccessKey string
+	SessionToken    string
 }
 
-type Credentials map[string]Credential
-
-func getAWSEnvs() Credential {
-	return Credential{
-		AccessKey:       os.Getenv("AWS_ACCESS_KEY_ID"),
-		SecretAccessKey: os.Getenv("AWS_SECRET_ACCESS_KEY"),
-		SessionToken:    os.Getenv("AWS_SESSION_TOKEN"),
-	}
-}
-
-func unsetCredential() {
-	os.Unsetenv("AWS_ACCESS_KEY_ID")
-	os.Unsetenv("AWS_SECRET_ACCESS_KEY")
-	os.Unsetenv("AWS_SESSION_TOKEN")
-}
-
-func putCredsFile(home string, creds Credentials) error {
-	data, err := toml.Marshal(creds)
-	if err != nil {
-		return xerrors.Errorf("toml.Marshal err:%w", err)
-	}
-
-	return ioutil.WriteFile(filepath.Join(home, ".aws", "credentials"), data, 0600)
-}
-
-/*
 func exists(filename string) bool {
 	_, err := os.Stat(filename)
 	return err == nil
 }
-*/
 
-func readCreds(home string) Credentials {
-	data, err := ioutil.ReadFile(filepath.Join(home, ".aws", "credentials"))
-	if err != nil {
-		log.Printf("readFile credentials err:%s", err)
-
-		return map[string]Credential{}
+func getAWSEnvs() Credential {
+	return Credential{
+		AccessKey:       os.Getenv(envAwsAccessKeyID),
+		SecretAccessKey: os.Getenv(envAwsSecretAccessKey),
+		SessionToken:    os.Getenv(envAwsSessionToken),
 	}
-	res := Credentials{}
-	err = toml.Unmarshal(data, &res)
+}
+
+func unsetCredential() {
+	os.Unsetenv(envAwsAccessKeyID)
+	os.Unsetenv(envAwsAccessKey)
+	os.Unsetenv(envAwsSecretAccessKey)
+	os.Unsetenv(envAwsSecretKey)
+	os.Unsetenv(envAwsSecurityToken)
+	os.Unsetenv(envAwsSessionToken)
+}
+
+func putCredsFile(credPath, profile string, cred Credential) error {
+	config, err := ini.Load(credPath)
 	if err != nil {
-		log.Printf("credentials Unmarshal err:%s", err)
-
-		return map[string]Credential{}
+		return xerrors.Errorf("ini.Load err: %w", err)
 	}
-
-	return res
+	section := config.Section(profile)
+	section.Key(awsAccessKeyID).SetValue(cred.AccessKey)
+	section.Key(awsSecretAccessKey).SetValue(cred.SecretAccessKey)
+	section.Key(awsSessionToken).SetValue(cred.SessionToken)
+	err = config.SaveTo(credPath)
+	if err != nil {
+		return xerrors.Errorf("config.SaveTo err: %w", err)
+	}
+	return nil
 }
 
 func EnvToCredentialFile(profile, home string) error {
-	/*
-		home, err := os.UserHomeDir()
+	// nolint:errcheck
+	credPath := filepath.Join(home, ".aws", "credentials")
+	if !exists(credPath) {
+		os.Mkdir(filepath.Join(home, ".aws"), 0755)
+		file, err := os.Create(credPath)
 		if err != nil {
-			return err
+			log.Fatal(err)
+			return xerrors.Errorf("create file err: %w", err)
 		}
-	*/
+		file.Close()
+	}
 	cred := getAWSEnvs()
 	if len(cred.AccessKey) == 0 {
 		return nil
 	}
-	// nolint:errcheck
-	os.Mkdir(filepath.Join(home, ".aws"), 0755)
-	creds := readCreds(home)
-	creds[profile] = cred
-	if err := putCredsFile(home, creds); err != nil {
+	if err := putCredsFile(credPath, profile, cred); err != nil {
 		return err
 	}
 	unsetCredential()

@@ -2,6 +2,8 @@ package checkplugin
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -9,14 +11,13 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws/client"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/mackerelio/mackerel-client-go"
 	"github.com/mackerelio/mackerel-container-agent/cmdutil"
 	"github.com/masahide/mackerel-awslambda-agent/pkg/config"
 	"github.com/masahide/mackerel-awslambda-agent/pkg/state"
 	"github.com/masahide/mackerel-awslambda-agent/pkg/statefile"
-	"github.com/masahide/mackerel-awslambda-agent/pkg/store/dynamodbdriver"
+	"github.com/masahide/mackerel-awslambda-agent/pkg/store"
 	"golang.org/x/xerrors"
 )
 
@@ -41,8 +42,16 @@ type CheckPlugin struct {
 	binPath string
 }
 
+func toJson(data interface{}) string {
+	b, err := json.Marshal(data)
+	if err != nil {
+		return ""
+	}
+	return string(b)
+}
+
 // NewCheckPlugin Create Plugin struct.
-func NewCheckPlugin(p client.ConfigProvider, params config.CheckPluginParams) *CheckPlugin {
+func NewCheckPlugin(s store.Store, params config.CheckPluginParams) *CheckPlugin {
 	var env config.Env
 	err := envconfig.Process("", &env)
 	if err != nil {
@@ -56,9 +65,9 @@ func NewCheckPlugin(p client.ConfigProvider, params config.CheckPluginParams) *C
 		Env:               env,
 		Manager: &state.Manager{
 			TTLDays:  env.StateTTLDays,
-			Org:      params.Org,
-			Hostname: params.Host.Hostname,
-			Store:    dynamodbdriver.New(p, env.StateTable),
+			Org:      params.HostState.Organization,
+			Hostname: params.HostState.Hostname,
+			Store:    s,
 		},
 		CheckState: &state.CheckState{},
 	}
@@ -69,11 +78,11 @@ func NewCheckPlugin(p client.ConfigProvider, params config.CheckPluginParams) *C
 // Generate generates check report.
 func (c *CheckPlugin) Generate(ctx context.Context) (*mackerel.CheckReport, error) {
 	if err := c.loadCheckState(); err != nil {
-		return nil, xerrors.Errorf("initialize err:%w", err)
+		return nil, xerrors.Errorf("initialize err: %w", err)
 	}
 	report := c.generate(ctx)
 	if err := c.saveCheckState(); err != nil {
-		return nil, xerrors.Errorf("saveCheckState err:%w", err)
+		return nil, xerrors.Errorf("saveCheckState err: %w", err)
 	}
 
 	return report, nil
@@ -84,14 +93,14 @@ func (c *CheckPlugin) loadCheckState() error {
 	var err error
 	c.CheckState, err = c.GetCheckState(c.Rule.Name)
 	if err != nil {
-		return xerrors.Errorf("GetCheckState err:%w", err)
+		return xerrors.Errorf("GetCheckState err: %w", err)
 	}
 	c.tmpDir, err = ioutil.TempDir(c.Env.TempDir, tempDirPrefix)
 	if err != nil {
 		log.Fatal(err)
 	}
 	if err = statefile.PutStatefiles(c.tmpDir, c.StateFiles); err != nil {
-		return xerrors.Errorf("PutStatefiles err:%w", err)
+		return xerrors.Errorf("PutStatefiles err: %w", err)
 	}
 
 	return nil
@@ -102,11 +111,11 @@ func (c *CheckPlugin) saveCheckState() error {
 	var err error
 	c.StateFiles, err = statefile.GetStatefiles(c.tmpDir)
 	if err != nil {
-		return xerrors.Errorf("GetStatefiles err:%w", err)
+		return xerrors.Errorf("GetStatefiles err: %w", err)
 	}
 	err = c.PutCheckState(c.Rule.Name, c.CheckState)
 	if err != nil {
-		return xerrors.Errorf("PutCheckState err:%w", err)
+		return xerrors.Errorf("PutCheckState err: %w", err)
 	}
 
 	return os.RemoveAll(c.tmpDir)
@@ -127,16 +136,17 @@ func (c *CheckPlugin) generate(ctx context.Context) *mackerel.CheckReport {
 	cmd = addPath(cmd, c.binPath)
 	now := time.Now()
 	envs := append(c.Rule.Env, fmt.Sprintf("MACKEREL_PLUGIN_WORKDIR=%s", c.tmpDir))
+	//envs = append(envs, fmt.Sprintf("HOME=%s", "/tmp/home"))
 	stdout, stderr, exitCode, err := cmdutil.RunCommand(ctx, cmd, "", envs, c.Rule.Timeout)
 
 	if stderr != "" {
-		log.Printf("plugin %s (%v): %q", c.Name, cmd, stderr)
+		log.Printf("plugin %s (%v): %q", c.Rule.Name, cmd, stderr)
 	}
 
 	var message string
 	var status mackerel.CheckStatus
 	if err != nil {
-		log.Printf("Warning plugin %s (%v): %s", c.Name, cmd, err)
+		log.Printf("Warning plugin %s (%v): %s", c.Rule.Name, cmd, err)
 		message = err.Error()
 		status = mackerel.CheckStatusUnknown
 	} else {
@@ -144,9 +154,9 @@ func (c *CheckPlugin) generate(ctx context.Context) *mackerel.CheckReport {
 		status = exitCodeToStatus(exitCode)
 	}
 
-	newReport := mackerel.CheckReport{
-		Source:               mackerel.NewCheckSourceHost(c.State.HostID),
-		Name:                 c.Name,
+	report := mackerel.CheckReport{
+		Source:               mackerel.NewCheckSourceHost(c.HostState.HostID),
+		Name:                 c.Rule.Name,
 		Status:               status,
 		Message:              message,
 		OccurredAt:           now.Unix(),
@@ -154,17 +164,18 @@ func (c *CheckPlugin) generate(ctx context.Context) *mackerel.CheckReport {
 		MaxCheckAttempts:     c.Rule.MaxCheckAttempts,
 	}
 
-	LatestReport := c.LatestReport
-	c.LatestReport = &newReport
-	if LatestReport == nil {
-		return &newReport
+	latestStatus := string(c.LatestStatus)
+	c.LatestStatus = string(report.Status)
+	log.Printf("report:%# v", report)
+	if latestStatus == "" {
+		return &report
 	}
-	if LatestReport.Status == mackerel.CheckStatusOK && newReport.Status == mackerel.CheckStatusOK {
+	if latestStatus == string(mackerel.CheckStatusOK) && report.Status == mackerel.CheckStatusOK {
 		// do not report ok -> ok
 		return nil
 	}
 
-	return &newReport
+	return &report
 }
 
 func exitCodeToStatus(exitCode int) mackerel.CheckStatus {
@@ -174,3 +185,12 @@ func exitCodeToStatus(exitCode int) mackerel.CheckStatus {
 
 	return mackerel.CheckStatusUnknown
 }
+
+const (
+	defaultTimeoutDuration = 30 * time.Second
+	timeoutKillAfter       = 10 * time.Second
+)
+
+var (
+	errTimedOut = errors.New("command timed out")
+)

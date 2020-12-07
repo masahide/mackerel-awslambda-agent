@@ -13,18 +13,18 @@ agent "Mackerel" as mackerel #fff
 SQS(reportQueue, "Report Queue", "check Reports")
 SimpleStorageServiceS3(config, "Mackerel config", "mackerel configfile")
 Lambda(sender, "sender", "Post a report to mackerel")
-Lambda(checks1, "checks", "check plugin 1")
-Lambda(checks2, "checks", "check plugin 2")
-Lambda(checks3, "checks", "check plugin 3")
+Lambda(checker1, "checker", "check plugin 1")
+Lambda(checker2, "checker", "check plugin 2")
+Lambda(checker3, "checker", "check plugin 3")
 Lambda(invoker, "invoker", "plugin invoker")
 
 config -> invoker : load config
-invoker --> checks1 : "async invoke"
-invoker --> checks2 : "async invoke"
-invoker --> checks3 : "async invoke"
-checks1 --> reportQueue : send report
-checks2 --> reportQueue : send report
-checks3 --> reportQueue : send report
+invoker --> checker1 : "async invoke"
+invoker --> checker2 : "async invoke"
+invoker --> checker3 : "async invoke"
+checker1 --> reportQueue : send report
+checker2 --> reportQueue : send report
+checker3 --> reportQueue : send report
 reportQueue <-- sender : poling
 sender -> mackerel
 

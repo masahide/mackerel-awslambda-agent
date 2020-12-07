@@ -3,17 +3,24 @@ import * as lambda from '@aws-cdk/aws-lambda';
 import * as s3 from '@aws-cdk/aws-s3';
 import * as dynamodb from '@aws-cdk/aws-dynamodb';
 import * as sqs from '@aws-cdk/aws-sqs';
+import * as iam from '@aws-cdk/aws-iam';
+import * as s3deploy from '@aws-cdk/aws-s3-deployment'
+import * as path  from 'path';
 import { SqsEventSource } from '@aws-cdk/aws-lambda-event-sources';
 
 //import ec2 = require("@aws-cdk/aws-ec2");
 
 export type Environment = {
-    DRYRUN:     string;
-    CLI:        string;
+    DRYRUN:      string;
+    CLI:         string;
+    HOSTNAME:    string;
+    S3KEY:       string;
+	ORGANIZATION:string; 
+
+    QUEUEURL:   string;
     S3BUCKET:   string;
-    QUEUENAME:  string;
     STATETABLE: string;
-    CHECKSFUNC: string;
+    CHECKERFUNC: string;
 }
 
 export interface Props extends cdk.StackProps {
@@ -24,7 +31,6 @@ export interface Props extends cdk.StackProps {
 }
 
 
-
 export class LambdaStack extends cdk.Stack {
     constructor(scope: cdk.Construct, id: string, props: Props) {
         super(scope, id, props);
@@ -32,11 +38,11 @@ export class LambdaStack extends cdk.Stack {
         // DynamoDB table
         const stateTable = new dynamodb.Table(this, `stateTable`, {
             partitionKey: {
-                name: 'ExecuteID',
+                name: 'id',
                 type: dynamodb.AttributeType.STRING
             },
             billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-            timeToLiveAttribute: "ExpiredAt",
+            timeToLiveAttribute: "ttl",
             removalPolicy: cdk.RemovalPolicy.DESTROY,
         });
         cdk.Tags.of(stateTable).add('Name', `${props.stackName}-stateTable`);
@@ -54,26 +60,32 @@ export class LambdaStack extends cdk.Stack {
         props.environment.S3BUCKET = bucket.bucketName
         cdk.Tags.of(bucket).add('Name', `${props.stackName}-bucket`);
 
+        // deploy config file
+        new s3deploy.BucketDeployment(this, `${props.stackName}-config`, {
+            sources: [s3deploy.Source.asset('../config',{ exclude: ['*.example']})],
+            destinationKeyPrefix: path.dirname(props.environment.S3KEY),
+            destinationBucket: bucket,
+            prune: false,
+        });
         // LambdaFunction
         props.environment.STATETABLE = stateTable.tableName;
-        props.environment.QUEUENAME = queue.queueName; 
-        const checksFunc = new lambda.Function(this, `checks`, {
+        props.environment.QUEUEURL = queue.queueUrl; 
+        const checkerFunc = new lambda.Function(this, `checker`, {
             memorySize: 1024,
             runtime: lambda.Runtime.GO_1_X,
-            code: new lambda.AssetCode('../.dist/checks/'),
-            handler: 'lambda-function',
+            code: new lambda.AssetCode('../.dist/checker/'),
+            handler: 'checker',
             timeout: cdk.Duration.seconds(120),
-           // role: appRole,
             environment: props.environment,
         });
-        cdk.Tags.of(checksFunc).add('Name', `${props.stackName}-checks-function`);
+        cdk.Tags.of(checkerFunc).add('Name', `${props.stackName}-checker-function`);
 
-        props.environment.CHECKSFUNC = checksFunc.functionName;
+        props.environment.CHECKERFUNC = checkerFunc.functionName;
         const invokerFunc = new lambda.Function(this, `invoker`, {
             memorySize: 512,
             runtime: lambda.Runtime.GO_1_X,
             code: new lambda.AssetCode('../.dist/invoker/'),
-            handler: 'lambda-function',
+            handler: 'invoker',
             timeout: cdk.Duration.seconds(120),
            // role: appRole,
             environment: props.environment,
@@ -83,18 +95,32 @@ export class LambdaStack extends cdk.Stack {
             memorySize: 512,
             runtime: lambda.Runtime.GO_1_X,
             code: new lambda.AssetCode('../.dist/sender/'),
-            handler: 'lambda-function',
+            handler: 'sender',
             timeout: cdk.Duration.seconds(30),
-           // role: appRole,
             environment: props.environment,
         });
         cdk.Tags.of(senderFunc).add('Name', `${props.stackName}-sender-function`);
         senderFunc.addEventSource(new SqsEventSource(queue));
 
         // IAM Role
-        stateTable.grantFullAccess(checksFunc);
-        bucket.grantRead(checksFunc);
-        queue.grantSendMessages(checksFunc);
+        stateTable.grantFullAccess(invokerFunc);
+        bucket.grantRead(invokerFunc);
+        checkerFunc.grantInvoke(invokerFunc);
+        stateTable.grantFullAccess(checkerFunc);
+        bucket.grantRead(checkerFunc);
+        queue.grantSendMessages(checkerFunc);
+        checkerFunc.addToRolePolicy(
+            new iam.PolicyStatement({
+                actions: [
+                    "logs:StartQuery",
+                    "logs:StopQuery",
+                    "logs:GetQueryResults",
+                ],
+                resources: [ "*" ],
+            }),
+        )
         queue.grantConsumeMessages(senderFunc);
+        bucket.grantRead(senderFunc);
+
     }
 }
