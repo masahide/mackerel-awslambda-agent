@@ -6,7 +6,11 @@ import * as sqs from '@aws-cdk/aws-sqs';
 import * as iam from '@aws-cdk/aws-iam';
 import * as s3deploy from '@aws-cdk/aws-s3-deployment'
 import * as path  from 'path';
-import { SqsEventSource } from '@aws-cdk/aws-lambda-event-sources';
+import { SqsEventSource  } from '@aws-cdk/aws-lambda-event-sources';
+import { Rule, Schedule } from '@aws-cdk/aws-events';
+import { LambdaFunction } from '@aws-cdk/aws-events-targets';
+import { Duration } from '@aws-cdk/core';
+
 
 //import ec2 = require("@aws-cdk/aws-ec2");
 
@@ -122,5 +126,9 @@ export class LambdaStack extends cdk.Stack {
         queue.grantConsumeMessages(senderFunc);
         bucket.grantRead(senderFunc);
 
+        new Rule(this, 'ScheduleRule', {
+            schedule: Schedule.rate(cdk.Duration.minutes(1)),
+            targets: [new LambdaFunction(invokerFunc)],
+        });
     }
 }

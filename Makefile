@@ -1,24 +1,15 @@
 export AWS_DEFAULT_REGION ?= ap-northeast-1
 
-NAME:= $(notdir $(PWD))
-
 DIST=.dist
 CHECKER_BIN=$(DIST)/checker/checker
 INVOKER_BIN=$(DIST)/invoker/invoker
 SENDER_BIN=$(DIST)/sender/sender
 BINS=$(CHECKER_BIN) $(INVOKER_BIN) $(SENDER_BIN)
-TEST_OPTIONS?=
 PKG?= $(wildcard pkg/*)
 ENV  := dev
 
-CF_STACKNAME := $(ENV)-$(NAME)
-CF_FILE      := template.yml
-IAM_CF_FILE  := iam-template.yml
-
 PLUGIN_DIST := $(dir $(CHECKER_BIN))
 PLUGIN_FILES := $(PLUGIN_DIST)/check-aws-cloudwatch-logs-insights
-
-export GO111MODULE := on
 
 # Install all the build and lint dependencies
 setup:
@@ -35,9 +26,6 @@ fmt:
 .PHONY: fmt
 
 test:
-	#go test $(TEST_OPTIONS) -v -race -coverpkg=$(PKG) \
-	#	-covermode=atomic -coverprofile=pkg_coverage.txt \
-	#	$(PKG)  -run . -timeout=2m
 	go test -race -cover -covermode=atomic -coverprofile=pkg_coverage.txt -timeout=2m ./pkg/...
 	cat pkg_coverage.txt > coverage.txt
 .PHONY: test
