@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-xray-sdk-go/xray"
 	"github.com/mackerelio/mackerel-client-go"
 	"golang.org/x/xerrors"
 )
@@ -28,6 +29,7 @@ func New(apiKey string) *Sender {
 		apiKey: apiKey,
 	}
 }
+
 func (s *Sender) Run(sqsEvent events.SQSEvent) error {
 	checkReports := make([]*mackerel.CheckReport, 0, len(sqsEvent.Records))
 	for _, record := range sqsEvent.Records {
@@ -46,6 +48,7 @@ func (s *Sender) Run(sqsEvent events.SQSEvent) error {
 		})
 	}
 	client := mackerel.NewClient(s.apiKey)
+	client.HTTPClient = xray.Client(nil)
 	if err := client.PostCheckReports(&mackerel.CheckReports{Reports: checkReports}); err != nil {
 		return xerrors.Errorf("mackerel PostCheckReports data:%# v err: %w", checkReports, err)
 	}

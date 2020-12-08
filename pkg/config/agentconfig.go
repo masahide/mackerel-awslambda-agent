@@ -1,9 +1,9 @@
 package config
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"encoding/json"
+	"fmt"
+	"hash/fnv"
 	"log"
 	"strings"
 	"time"
@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/client"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-xray-sdk-go/xray"
 	"github.com/kelseyhightower/envconfig"
 	mkconf "github.com/mackerelio/mackerel-agent/config"
 	"github.com/mackerelio/mackerel-client-go"
@@ -20,6 +21,10 @@ import (
 	"github.com/masahide/mackerel-awslambda-agent/pkg/store/dynamodbdriver"
 	"github.com/pelletier/go-toml"
 	"golang.org/x/xerrors"
+)
+
+const (
+	maxMemo = 250
 )
 
 // AgentConfig is agent config struct.
@@ -40,9 +45,10 @@ func NewAgentConfig(s store.Store, p client.ConfigProvider) (*AgentConfig, error
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+	dynamo := dynamodbdriver.New(p, env.StateTable)
 	a := &AgentConfig{
-		stateStore: dynamodbdriver.New(p, env.StateTable),
-		hostStore:  dynamodbdriver.New(p, env.StateTable),
+		stateStore: dynamo,
+		hostStore:  dynamo,
 		CheckRules: map[string]CheckRule{},
 		Env:        env,
 		Manager: &state.Manager{
@@ -56,15 +62,15 @@ func NewAgentConfig(s store.Store, p client.ConfigProvider) (*AgentConfig, error
 }
 
 func (a *AgentConfig) getCheckSum(param interface{}) string {
-	data := []byte{}
 	data, err := json.Marshal(param)
 	if err != nil {
 		log.Printf("hosthash json.Marshal err:%s", err)
 		return ""
 	}
-	h := md5.Sum(data)
-	return hex.EncodeToString(h[:])
-
+	h := fnv.New64a()
+	// nolint:errcheck
+	h.Write(data)
+	return fmt.Sprintf("%x", h.Sum64())
 }
 
 func (a *AgentConfig) GetHost() error {
@@ -92,7 +98,6 @@ func (a *AgentConfig) GetHost() error {
 			return xerrors.Errorf("mackerel CreateHost err: %w", err)
 		}
 		a.HostState.HostID = id
-		//a.Host.ID = a.HostState.HostID
 	}
 	checkSum := a.getCheckSum(param)
 	if checkSum == a.HostState.HostCheckSum {
@@ -107,6 +112,7 @@ func (a *AgentConfig) GetHost() error {
 
 func LoadS3Config(p client.ConfigProvider, s3Bucket, s3Key string) (*mkconf.Config, error) {
 	svc := s3.New(p)
+	xray.AWS(svc.Client)
 	res, err := svc.GetObject(&s3.GetObjectInput{
 		Bucket: &s3Bucket,
 		Key:    &s3Key,
@@ -138,7 +144,6 @@ func (a *AgentConfig) LoadAgentConfig(p client.ConfigProvider, s3Bucket, s3Key s
 	a.APIKey = conf.Apikey
 	checkRules := map[string]CheckRule{}
 	if pconfs, ok := conf.Plugin["checks"]; ok {
-		//a.Host.Checks = make([]Check, 0, len(pconfs))
 		for name, pconf := range pconfs {
 			envs, err := pconf.Env.ConvertToStrings()
 			if err != nil {
@@ -160,15 +165,13 @@ func (a *AgentConfig) LoadAgentConfig(p client.ConfigProvider, s3Bucket, s3Key s
 			case []string:
 				rule.Command = strings.Join(v, " ")
 			default:
-				log.Printf("unkown command type rule:% value:%v", name, v)
+				log.Printf("Unknown command type rule:% value:%v", name, v)
 			}
-			if utf8.RuneCountInString(pconf.Memo) > 250 {
+			if utf8.RuneCountInString(pconf.Memo) > maxMemo {
 				log.Printf("plugin.checks.%s.memo' size exceeds 250 characters", name)
 			}
 			rule.Memo = pconf.Memo
-
 			checkRules[name] = rule
-			//a.Host.Checks = append(a.Host.Checks, Check{Name: name, Memo: pconf.Memo})
 		}
 	}
 	a.CheckRules = checkRules

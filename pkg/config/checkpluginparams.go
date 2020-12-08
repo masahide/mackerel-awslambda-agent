@@ -5,8 +5,6 @@ import "github.com/masahide/mackerel-awslambda-agent/pkg/state"
 // CheckPluginParams is plugin awslambda event params.
 
 type CheckPluginParams struct {
-	//Org  string    `json:"org"`
-	Rule CheckRule `json:"rule"`
-	//Host      Host             `json:"host"`
+	Rule      CheckRule        `json:"rule"`
 	HostState *state.HostState `json:"state"`
 }

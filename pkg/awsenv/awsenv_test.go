@@ -26,11 +26,11 @@ func TestEnvToCredentialFile(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	expected := `
-[test_profile]
-  aws_access_key_id = "keyxxxxxxxxxxxxxxx"
-  aws_secret_access_key = "secretxxxxxxxxxxxxxxx"
-  aws_session_token = "tokenxxxxxxxxxxxxxxx"
+	expected := `[test_profile]
+aws_access_key_id     = keyxxxxxxxxxxxxxxx
+aws_secret_access_key = secretxxxxxxxxxxxxxxx
+aws_session_token     = tokenxxxxxxxxxxxxxxx
+
 `
 	if diff := cmp.Diff(string(data), expected); diff != "" {
 		t.Errorf("credentials file differs: (-got +want)\n%s", diff)
@@ -46,16 +46,16 @@ func TestEnvToCredentialFile(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	expected = `
-[test2_profile]
-  aws_access_key_id = "keyxxxxxxxxxxxxxxx"
-  aws_secret_access_key = "secretxxxxxxxxxxxxxxx"
-  aws_session_token = "tokenxxxxxxxxxxxxxxx"
+	expected = `[test_profile]
+aws_access_key_id     = keyxxxxxxxxxxxxxxx
+aws_secret_access_key = secretxxxxxxxxxxxxxxx
+aws_session_token     = tokenxxxxxxxxxxxxxxx
 
-[test_profile]
-  aws_access_key_id = "keyxxxxxxxxxxxxxxx"
-  aws_secret_access_key = "secretxxxxxxxxxxxxxxx"
-  aws_session_token = "tokenxxxxxxxxxxxxxxx"
+[test2_profile]
+aws_access_key_id     = keyxxxxxxxxxxxxxxx
+aws_secret_access_key = secretxxxxxxxxxxxxxxx
+aws_session_token     = tokenxxxxxxxxxxxxxxx
+
 `
 	if diff := cmp.Diff(string(data), expected); diff != "" {
 		t.Errorf("credentials file differs: (-got +want)\n%s", diff)

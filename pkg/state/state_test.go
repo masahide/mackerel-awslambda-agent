@@ -6,7 +6,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
-	mackerel "github.com/mackerelio/mackerel-client-go"
 )
 
 type mockDynamodb struct {
@@ -136,7 +135,7 @@ func TestPutCheckState(t *testing.T) {
 		expectPut string
 		expectGet string
 	}{
-		{"hoge", "org", "hostname", CheckState{"id000000000", []byte(`"json":"sample"`), &mackerel.CheckReport{}}, "id000000000", "org-hostname-hoge"},
+		{"hoge", "org", "hostname", CheckState{"id000000000", []byte(`"json":"sample"`), ""}, "id000000000", "org-hostname-hoge"},
 	}
 	for n, tt := range tests {
 		ms := &mockCheckStore{}

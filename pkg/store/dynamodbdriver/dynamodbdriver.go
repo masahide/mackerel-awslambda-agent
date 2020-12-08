@@ -5,6 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	"github.com/aws/aws-xray-sdk-go/xray"
 	"golang.org/x/xerrors"
 )
 
@@ -16,8 +17,10 @@ type DynamoDB struct {
 
 // New DynamoDB.
 func New(p client.ConfigProvider, tableName string) *DynamoDB {
+	svc := dynamodb.New(p)
+	xray.AWS(svc.Client)
 	return &DynamoDB{
-		DynamoDBAPI: dynamodb.New(p),
+		DynamoDBAPI: svc,
 		TableName:   tableName,
 	}
 }

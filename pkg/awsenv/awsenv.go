@@ -10,15 +10,19 @@ import (
 )
 
 const (
-	awsAccessKeyID     = "aws_access_key_id"
+	awsAccessKeyID = "aws_access_key_id"
+	// nolint:gosec
 	awsSecretAccessKey = "aws_secret_access_key"
 	awsSessionToken    = "aws_session_token"
 
-	envAwsAccessKeyID     = "AWS_ACCESS_KEY_ID"
+	envAwsAccessKeyID = "AWS_ACCESS_KEY_ID"
+	// nolint:gosec
 	envAwsSecretAccessKey = "AWS_SECRET_ACCESS_KEY"
-	envAwsSessionToken    = "AWS_SESSION_TOKEN"
+	// nolint:gosec
+	envAwsSessionToken = "AWS_SESSION_TOKEN"
 
-	envAwsAccessKey     = "AWS_ACCESS_KEY"
+	envAwsAccessKey = "AWS_ACCESS_KEY"
+	// nolint:gosec
 	envAwsSecretKey     = "AWS_SECRET_KEY"
 	envAwsSecurityToken = "AWS_SECURITY_TOKEN"
 )
@@ -68,9 +72,9 @@ func putCredsFile(credPath, profile string, cred Credential) error {
 }
 
 func EnvToCredentialFile(profile, home string) error {
-	// nolint:errcheck
 	credPath := filepath.Join(home, ".aws", "credentials")
 	if !exists(credPath) {
+		// nolint:errcheck
 		os.Mkdir(filepath.Join(home, ".aws"), 0755)
 		file, err := os.Create(credPath)
 		if err != nil {

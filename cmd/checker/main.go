@@ -23,8 +23,8 @@ const (
 
 var (
 	// nolint:gochecknoglobals
-	// nolint:gochecknoglobals
 	q *queue.Queue
+	// nolint:gochecknoglobals
 	s store.Store
 )
 
@@ -40,6 +40,7 @@ func main() {
 	if q, err = queue.New(sess); err != nil {
 		log.Fatal(err)
 	}
+	// nolint:errcheck
 	os.Mkdir(homeDir, 0755)
 	os.Setenv("HOME", homeDir)
 	if err := awsenv.EnvToCredentialFile("default", homeDir); err != nil {

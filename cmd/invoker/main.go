@@ -39,14 +39,17 @@ func main() {
 func handler(ctx context.Context, event config.Env) error {
 	if err := agent.LoadAgentConfig(sess, env.S3Bucket, env.S3Key); err != nil {
 		log.Printf("agent.LoadAgentConfig err: %+v", err)
+		// nolint:wrapcheck
 		return err
 	}
 	if err := agent.GetHost(); err != nil {
 		log.Printf("agent.GetHost err: %+v", err)
+		// nolint:wrapcheck
 		return err
 	}
 	if err := iv.Run(agent); err != nil {
 		log.Printf("invoker Run err: %+v", err)
+		// nolint:wrapcheck
 		return err
 	}
 	return nil

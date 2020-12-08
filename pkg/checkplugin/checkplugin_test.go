@@ -4,11 +4,12 @@ import (
 	"context"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/mackerelio/mackerel-client-go"
 	"github.com/masahide/mackerel-awslambda-agent/pkg/config"
 	"github.com/masahide/mackerel-awslambda-agent/pkg/state"
 )
+
+//checkplugin_test.go:47: res[i]=<&mackerel.CheckReport{Source:(*mackerel.checkSourceHost)( 0xc00000f420), Name:"", Status:"OK", Message:"", OccurredAt: 0, NotificationInterval: 0x0, MaxCheckAttempts: 0x0}> want <mackerel.CheckReport{Source:mackerel.CheckSource(nil), Name:"test", Status:"OK", Message:"", OccurredAt: 0, NotificationInterval: 0x0, MaxCheckAttempts: 0x0}>
 
 func TestGenerate(t *testing.T) {
 	test := []struct {
@@ -18,7 +19,7 @@ func TestGenerate(t *testing.T) {
 	}{
 		{
 			params: config.CheckPluginParams{
-				Name: "test",
+				HostState: &state.HostState{},
 			},
 			ps: state.PluginState{
 				ID:    "1111111",
@@ -26,20 +27,18 @@ func TestGenerate(t *testing.T) {
 				TTL:   0,
 			},
 			want: mackerel.CheckReport{
-				Name:    "test",
+				Name:    "",
 				Status:  "OK",
 				Message: "",
 			},
 		},
 	}
-	sess := session.Must(session.NewSession())
 	for _, tt := range test {
 		// config.CheckPluginParams
-		c := NewCheckPlugin(sess, tt.params)
 		m := mockHostStore{
 			ps: tt.ps,
 		}
-		c.Manager.Store = &m
+		c := NewCheckPlugin(&m, tt.params)
 		ctx := context.Background()
 		res, err := c.Generate(ctx)
 		if err != nil {

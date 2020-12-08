@@ -15,10 +15,11 @@ func TestNewAgentConfig(t *testing.T) {
 		{
 			envs: []string{"HostsTable", "StateTable"},
 			want: Env{
-				HostsTable:      "mackerel-awslambda-hosts",
-				CheckRulesTable: "mackerel-awslambda-checkrules",
-				StateTable:      "mackerel-awslambda-state",
-				StateTTLDays:    90,
+				StateTable:   "mackerel-awslambda-state",
+				StateTTLDays: 90,
+				S3Key:        "mackerel.toml",
+				Hostname:     "hostname",
+				Organization: "organization",
 			},
 		},
 	}
@@ -27,9 +28,14 @@ func TestNewAgentConfig(t *testing.T) {
 		for _, k := range tt.envs {
 			os.Unsetenv(k)
 		}
-		c := NewAgentConfig(sess)
+		m := mockHostStore{}
+		c, err := NewAgentConfig(&m, sess)
+		if err != nil {
+			t.Error(err)
+		}
 		if c.Env != tt.want {
 			t.Errorf("result = <%q> want <%q>", c.Env, tt.want)
+			//    agentconfig_test.go:34: result = <{"mackerel-awslambda-state" 'Z' "mackerel.toml" "" "hostname" "organization" "" ""}> want <{"mackerel-awslambda-state" 'Z' "" "" "" "" "" ""}>
 		}
 	}
 }
@@ -64,8 +70,12 @@ func (m *mockCheckStore) Put(in interface{}) error              { return nil }
 
 func TestLoadTables(t *testing.T) {
 	sess := session.Must(session.NewSession())
-	c := NewAgentConfig(sess)
-	c.hostsStore = &mockCheckStore{checkOutputs: []CheckRule{}}
+	m := mockHostStore{}
+	c, err := NewAgentConfig(&m, sess)
+	if err != nil {
+		t.Error(err)
+	}
+	c.hostStore = &mockCheckStore{checkOutputs: []CheckRule{}}
 	if len(c.CheckRules) != 0 {
 		t.Error("len(c.CheckRules)!=0")
 	}

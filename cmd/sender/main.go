@@ -12,9 +12,7 @@ import (
 	"github.com/masahide/mackerel-awslambda-agent/pkg/sender"
 )
 
-var (
-	s *sender.Sender
-)
+var s *sender.Sender
 
 func main() {
 	var env config.Env

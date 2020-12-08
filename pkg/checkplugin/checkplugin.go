@@ -2,8 +2,6 @@ package checkplugin
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -40,14 +38,6 @@ type CheckPlugin struct {
 	*state.CheckState
 	tmpDir  string
 	binPath string
-}
-
-func toJson(data interface{}) string {
-	b, err := json.Marshal(data)
-	if err != nil {
-		return ""
-	}
-	return string(b)
 }
 
 // NewCheckPlugin Create Plugin struct.
@@ -136,7 +126,6 @@ func (c *CheckPlugin) generate(ctx context.Context) *mackerel.CheckReport {
 	cmd = addPath(cmd, c.binPath)
 	now := time.Now()
 	envs := append(c.Rule.Env, fmt.Sprintf("MACKEREL_PLUGIN_WORKDIR=%s", c.tmpDir))
-	//envs = append(envs, fmt.Sprintf("HOME=%s", "/tmp/home"))
 	stdout, stderr, exitCode, err := cmdutil.RunCommand(ctx, cmd, "", envs, c.Rule.Timeout)
 
 	if stderr != "" {
@@ -164,7 +153,7 @@ func (c *CheckPlugin) generate(ctx context.Context) *mackerel.CheckReport {
 		MaxCheckAttempts:     c.Rule.MaxCheckAttempts,
 	}
 
-	latestStatus := string(c.LatestStatus)
+	latestStatus := c.LatestStatus
 	c.LatestStatus = string(report.Status)
 	log.Printf("report:%# v", report)
 	if latestStatus == "" {
@@ -185,12 +174,3 @@ func exitCodeToStatus(exitCode int) mackerel.CheckStatus {
 
 	return mackerel.CheckStatusUnknown
 }
-
-const (
-	defaultTimeoutDuration = 30 * time.Second
-	timeoutKillAfter       = 10 * time.Second
-)
-
-var (
-	errTimedOut = errors.New("command timed out")
-)

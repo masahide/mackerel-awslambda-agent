@@ -7,6 +7,7 @@ require (
 	github.com/Songmu/timeout v0.4.0
 	github.com/aws/aws-lambda-go v1.12.1
 	github.com/aws/aws-sdk-go v1.22.0
+	github.com/aws/aws-xray-sdk-go v1.1.0
 	github.com/bitly/go-simplejson v0.5.0 // indirect
 	github.com/cbroglie/mapstructure v0.0.0-20161118233042-300500ef91c1 // indirect
 	github.com/go-ini/ini v1.62.0

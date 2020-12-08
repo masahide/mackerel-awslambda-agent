@@ -9,7 +9,6 @@ import * as path  from 'path';
 import { SqsEventSource  } from '@aws-cdk/aws-lambda-event-sources';
 import { Rule, Schedule } from '@aws-cdk/aws-events';
 import { LambdaFunction } from '@aws-cdk/aws-events-targets';
-import { Duration } from '@aws-cdk/core';
 
 
 //import ec2 = require("@aws-cdk/aws-ec2");
@@ -81,27 +80,30 @@ export class LambdaStack extends cdk.Stack {
             handler: 'checker',
             timeout: cdk.Duration.seconds(120),
             environment: props.environment,
+            //tracing: lambda.Tracing.ACTIVE,
+
         });
         cdk.Tags.of(checkerFunc).add('Name', `${props.stackName}-checker-function`);
 
         props.environment.CHECKERFUNC = checkerFunc.functionName;
         const invokerFunc = new lambda.Function(this, `invoker`, {
-            memorySize: 512,
+            memorySize: 128,
             runtime: lambda.Runtime.GO_1_X,
             code: new lambda.AssetCode('../.dist/invoker/'),
             handler: 'invoker',
             timeout: cdk.Duration.seconds(120),
-           // role: appRole,
             environment: props.environment,
+            //tracing: lambda.Tracing.ACTIVE,
         });
         cdk.Tags.of(invokerFunc).add('Name', `${props.stackName}-invoker-function`);
         const senderFunc = new lambda.Function(this, `sender`, {
-            memorySize: 512,
+            memorySize: 128,
             runtime: lambda.Runtime.GO_1_X,
             code: new lambda.AssetCode('../.dist/sender/'),
             handler: 'sender',
             timeout: cdk.Duration.seconds(30),
             environment: props.environment,
+            //tracing: lambda.Tracing.ACTIVE,
         });
         cdk.Tags.of(senderFunc).add('Name', `${props.stackName}-sender-function`);
         senderFunc.addEventSource(new SqsEventSource(queue));

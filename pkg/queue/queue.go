@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/client"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
+	"github.com/aws/aws-xray-sdk-go/xray"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/mackerelio/mackerel-client-go"
 	"golang.org/x/xerrors"
@@ -24,8 +25,10 @@ type Queue struct {
 
 // New Queue struct.
 func New(sess client.ConfigProvider) (*Queue, error) {
+	svc := sqs.New(sess)
+	xray.AWS(svc.Client)
 	q := Queue{
-		svc: sqs.New(sess),
+		svc: svc,
 	}
 	if err := envconfig.Process("", &q.envs); err != nil {
 		return nil, xerrors.Errorf("envconfig.Process err: %w", err)
