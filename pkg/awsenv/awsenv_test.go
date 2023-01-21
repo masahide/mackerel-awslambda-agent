@@ -30,7 +30,6 @@ func TestEnvToCredentialFile(t *testing.T) {
 aws_access_key_id     = keyxxxxxxxxxxxxxxx
 aws_secret_access_key = secretxxxxxxxxxxxxxxx
 aws_session_token     = tokenxxxxxxxxxxxxxxx
-
 `
 	if diff := cmp.Diff(string(data), expected); diff != "" {
 		t.Errorf("credentials file differs: (-got +want)\n%s", diff)
@@ -55,7 +54,6 @@ aws_session_token     = tokenxxxxxxxxxxxxxxx
 aws_access_key_id     = keyxxxxxxxxxxxxxxx
 aws_secret_access_key = secretxxxxxxxxxxxxxxx
 aws_session_token     = tokenxxxxxxxxxxxxxxx
-
 `
 	if diff := cmp.Diff(string(data), expected); diff != "" {
 		t.Errorf("credentials file differs: (-got +want)\n%s", diff)
